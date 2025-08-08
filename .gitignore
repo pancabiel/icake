@@ -33,10 +33,6 @@ coverage/
 .DS_Store
 Thumbs.db
 
-# Docker
-**/Dockerfile
-**/.dockerignore
-
 # Maven Wrapper
 icake-api/.mvn/
 icake-api/mvnw
