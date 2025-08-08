@@ -33,11 +33,6 @@ coverage/
 .DS_Store
 Thumbs.db
 
-# Maven Wrapper
-icake-api/.mvn/
-icake-api/mvnw
-icake-api/mvnw.cmd
-
 # Misc
 *.bak
 *.swp
