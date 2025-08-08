@@ -1,0 +1,49 @@
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+icake-frontend/node_modules/
+icake-api/target/
+
+# Build artifacts
+dist/
+build/
+.vite/
+.vitepress/
+.next/
+out/
+coverage/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Docker
+**/Dockerfile
+**/docker-compose.yml
+**/.dockerignore
+
+# Maven Wrapper
+icake-api/.mvn/
+icake-api/mvnw
+icake-api/mvnw.cmd
+
+# Misc
+*.bak
+*.swp
+*.tmp
