@@ -1,35 +1,35 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import OrderCard from "./components/OrderCard";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const orders = [
+    {
+      date: "12/08/2025",
+      name: "Maria Souza",
+      address: "Rua das Flores, 123",
+      details: "Bolo de chocolate, 2kg",
+    },
+    {
+      date: "13/08/2025",
+      name: "João Silva",
+      address: "Av. Central, 456",
+      details: "Cupcakes sortidos, 24 unidades",
+    },
+  ];
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="pb-16 bg-gray-50 min-h-screen">
+      <Header />
 
-export default App
+      <main className="p-4">
+        <h2 className="text-xl font-bold mb-4">Encomendas</h2>
+        {orders.map((order, index) => (
+          <OrderCard key={index} {...order} />
+        ))}
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
