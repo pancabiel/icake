@@ -1,2 +1,15 @@
 @import "tailwindcss";
 
+:root {
+    --main-red: #BF0413;
+    --main-light-red: #D90B31;
+    --main-pink: #F294A5;
+    --main-white: #F0F0F2;
+    --main-black: #202324;
+    --main-dark-red: #730202;
+}
+
+header {
+    background-color: var(--main-red);
+    color: white;
+}

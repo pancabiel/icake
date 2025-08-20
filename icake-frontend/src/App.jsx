@@ -1,35 +1,25 @@
-import Header from "./components/Header";
+
 import Footer from "./components/Footer";
-import OrderCard from "./components/OrderCard";
+import Home from "./pages/Home";
+import Calendar from "./pages/Calendar";
+import NewOrder from "./pages/NewOrder";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Shopping from "./pages/Shoppping";
+import Profile from "./pages/Profile";
 
 export default function App() {
-  const orders = [
-    {
-      date: "12/08/2025",
-      name: "Maria Souza",
-      address: "Rua das Flores, 123",
-      details: "Bolo de chocolate, 2kg",
-    },
-    {
-      date: "13/08/2025",
-      name: "João Silva",
-      address: "Av. Central, 456",
-      details: "Cupcakes sortidos, 24 unidades",
-    },
-  ];
-
-  return (
-    <div className="pb-16 bg-gray-50 min-h-screen">
-      <Header />
-
-      <main className="p-4">
-        <h2 className="text-xl font-bold mb-4">Encomendas</h2>
-        {orders.map((order, index) => (
-          <OrderCard key={index} {...order} />
-        ))}
-      </main>
-
-      <Footer />
-    </div>
-  );
+	return (
+		<Router>
+			<div className="pb-16"> {/* padding bottom so content isn't hidden behind footer */}
+				<Routes>
+					<Route path="/" element={<Home />} />
+					<Route path="/calendar" element={<Calendar />} />
+					<Route path="/newOrder" element={<NewOrder />} />
+					<Route path="/shopping" element={<Shopping />} />
+					<Route path="/profile" element={<Profile />} />
+				</Routes>
+			</div>
+			<Footer />
+		</Router>
+	);
 }

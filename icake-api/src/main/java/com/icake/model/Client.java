@@ -8,10 +8,6 @@ public class Client extends BaseEntity {
 
     private String name;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id")
-    private Address address;
-
     public String getName() {
         return name;
     }
@@ -20,11 +16,4 @@ public class Client extends BaseEntity {
         this.name = name;
     }
 
-    public Address getAddress() {
-        return address;
-    }
-
-    public void setAddress(Address address) {
-        this.address = address;
-    }
 }
