@@ -16,7 +16,7 @@ public class OrderItem extends BaseEntity {
 
     private int quantity;
 
-    @Column(length = 1000)
+    @Column(length = 4000)
     private String note;
 
     public Order getOrder() {

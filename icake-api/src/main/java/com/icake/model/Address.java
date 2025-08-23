@@ -55,4 +55,13 @@ public class Address extends BaseEntity {
     public void setCity(City city) {
         this.city = city;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.getNumber());
+        sb.append(" - ");
+        sb.append(this.getStreet());
+        return sb.toString();
+    }
 }
