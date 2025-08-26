@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import OrderCard from "../components/OrderCard";
+import { fetchOrders } from "@/api";
 
 export default function Home() {
 	const [orders, setOrders] = useState([]);
 
 	useEffect(() => {
-		fetch("http://localhost:8080/api/orders")
-			.then((res) => res.json())
+    fetchOrders()
 			.then((data) => setOrders(data))
 			.catch((err) => console.error("Error fetching orders:", err));
 	}, []);
@@ -25,7 +25,7 @@ export default function Home() {
 							name={order.clientName}
 							address={order.address}
 							details={order.items
-								.map((item) => `${item.quantity}x ${item.itemName}`)
+								.map((orderItem) => `${orderItem.quantity}x ${orderItem.item.name}`)
 								.join(", ")}
 						/>
 					))

@@ -19,7 +19,7 @@ export default function Header() {
 
 			{/* Botão notificações */}
 			<button className="p-2">
-				<Bell size={24} />
+				<img src="/icon.png" width={30}/>
 			</button>
 		</header>
 	);

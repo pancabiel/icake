@@ -59,9 +59,9 @@ public class Address extends BaseEntity {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(this.getNumber());
-        sb.append(" - ");
         sb.append(this.getStreet());
+        sb.append(" - ");
+        sb.append(this.getNumber());
         return sb.toString();
     }
 }

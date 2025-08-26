@@ -2,7 +2,7 @@
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Calendar from "./pages/Calendar";
-import NewOrder from "./pages/NewOrder";
+import OrderForm from "./pages/OrderForm";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Shopping from "./pages/Shoppping";
 import Profile from "./pages/Profile";
@@ -14,7 +14,7 @@ export default function App() {
 				<Routes>
 					<Route path="/" element={<Home />} />
 					<Route path="/calendar" element={<Calendar />} />
-					<Route path="/newOrder" element={<NewOrder />} />
+					<Route path="/newOrder" element={<OrderForm />} />
 					<Route path="/shopping" element={<Shopping />} />
 					<Route path="/profile" element={<Profile />} />
 				</Routes>
