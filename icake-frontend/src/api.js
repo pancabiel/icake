@@ -1,5 +1,5 @@
 // src/api.js
-export const API_BASE_URL = "http://192.168.1.20:8080/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchOrders = () => fetch(`${API_BASE_URL}/orders`).then(res => res.json());
 export const fetchClients = () => fetch(`${API_BASE_URL}/clients`).then(res => res.json());
