@@ -1,6 +1,8 @@
 package com.icake.controller;
 
+import com.icake.dto.AddressDTO;
 import com.icake.model.Client;
+import com.icake.service.AddressService;
 import com.icake.service.ClientService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,9 +13,11 @@ import java.util.List;
 @RequestMapping("/api/clients")
 public class ClientController {
     private final ClientService clientService;
+    private final AddressService addressService;
 
-    public ClientController(ClientService clientService) {
+    public ClientController(ClientService clientService, AddressService addressService) {
         this.clientService = clientService;
+        this.addressService = addressService;
     }
 
     @GetMapping
@@ -49,5 +53,13 @@ public class ClientController {
         }
         clientService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{clientId}/addresses")
+    public List<AddressDTO> getAddressesByClient(@PathVariable Long clientId) {
+        return addressService.findByClientId(clientId)
+                .stream()
+                .map(AddressDTO::new)
+                .toList();
     }
 }

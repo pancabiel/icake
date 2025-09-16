@@ -1,22 +1,34 @@
-package com.icake.model;
+package com.icake.dto;
 
-import jakarta.persistence.*;
+import com.icake.model.Address;
 
-@Entity
-@Table(name = "addresses")
-public class Address extends BaseEntity {
+public class AddressDTO {
 
+    private Long id;
     private String resume;
-
-    @Column(name = "zip_code")
     private String zipCode;
     private String street;
     private String number;
     private String complement;
+    private String cityName;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "city_id", nullable = false)
-    private City city;
+    public AddressDTO(Address address) {
+        this.id = address.getId();
+        this.resume = address.getResume();
+        this.zipCode = address.getZipCode();
+        this.street = address.getStreet();
+        this.number = address.getNumber();
+        this.complement = address.getComplement();
+        this.cityName = address.getCity() != null ? address.getCity().getName() : null;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getResume() {
         return resume;
@@ -58,20 +70,11 @@ public class Address extends BaseEntity {
         this.complement = complement;
     }
 
-    public City getCity() {
-        return city;
+    public String getCityName() {
+        return cityName;
     }
 
-    public void setCity(City city) {
-        this.city = city;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(this.getStreet());
-        sb.append(" - ");
-        sb.append(this.getNumber());
-        return sb.toString();
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
     }
 }

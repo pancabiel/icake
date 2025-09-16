@@ -12,12 +12,13 @@ export default function ClientSelect({ clients, value, onChange }) {
         );
 
   return (
-    <Combobox value={value} onChange={onChange}>
+    <Combobox value={value || ""} onChange={onChange}>
       <div className="relative">
         <ComboboxInput
           placeholder="Nome do cliente"
           className="w-full border p-2 rounded"
           onChange={(e) => setQuery(e.target.value)}
+          displayValue={(id) => clients.find(c => c.id === id)?.name || ""}
         />
         <ComboboxOptions className="absolute w-full mt-1 border rounded bg-white z-10 max-h-40 overflow-auto">
           {filteredClients.length === 0 && query !== "" ? (
@@ -26,7 +27,7 @@ export default function ClientSelect({ clients, value, onChange }) {
             </ComboboxOption>
           ) : (
             filteredClients.map((client) => (
-              <ComboboxOption key={client.id} value={client.name}>
+              <ComboboxOption key={client.id} value={client.id}>
                 {client.name}
               </ComboboxOption>
             ))
