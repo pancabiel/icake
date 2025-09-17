@@ -12,9 +12,11 @@ public class WebFluxSecurityConfiguration {
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-        http.authorizeExchange(exchanges -> exchanges
-                .anyExchange().permitAll()
-        );
+        http.csrf(ServerHttpSecurity.CsrfSpec::disable) // disable CSRF for APIs
+            .cors(cors -> {}) // enable CORS using your CorsConfigurationSource bean
+            .authorizeExchange(exchanges -> exchanges
+                    .anyExchange().permitAll()
+            );
 
         return http.build();
     }

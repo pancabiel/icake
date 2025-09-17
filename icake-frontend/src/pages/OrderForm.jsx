@@ -15,13 +15,14 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { useEffect, useState } from "react";
-import { fetchClients, fetchItems } from "@/api";
+import { createOrder, fetchClients, fetchItems } from "@/api";
 import ClientSelect from "@/components/ClientSelect";
 import AddressSelect from "@/components/AddressSelect";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ItemSelect from "@/components/ItemSelect";
 import { Trash } from "lucide-react";
+import ConfirmModal from "@/components/ConfirmModal";
 
 const orderSchema = z.object({
 	clientId: z.string().nonempty("Client is required"),
@@ -41,6 +42,32 @@ export default function OrderForm() {
 
 	const [clients, setClients] = useState([]);
 	const [items, setItems] = useState([]);
+	const [modalOpen, setModalOpen] = useState(false);
+	const [modalConfig, setModalConfig] = useState({});
+
+	const openDeleteModal = (index) => {
+		setModalConfig({
+			title: "Excluir item?",
+			message: "Tem certeza que deseja excluir o item?",
+			onConfirm: () => {
+				remove(index);
+				setModalOpen(false);
+			}
+		});
+		setModalOpen(true);
+	};
+
+	const openFinishModal = () => {
+		setModalConfig({
+			title: "Finalizar pedido?",
+			message: "Tem certeza que deseja finalizar o pedido?",
+			onConfirm: () => {
+				setModalOpen(false);
+				onSubmit(form.getValues());
+			}
+		});
+		setModalOpen(true);
+	};
 
 	useEffect(() => {
 		fetchClients()
@@ -62,19 +89,23 @@ export default function OrderForm() {
 	});
 
 	async function onSubmit(values) {
-		const confirmed = confirm("Salvar o pedido?");
-		if (!confirmed) return;
-
-		await fetch("http://localhost:8080/api/orders", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(values),
-		});
-		form.reset();
+		try {
+			const order = await createOrder(values);
+			form.reset();
+		} catch (err) {
+			
+		}
 	}
 
 	return (
 		<div className="p-4 sm:p-6 md:p-8 max-w-3xl mx-auto">
+			<ConfirmModal
+				isOpen={modalOpen}
+				title={modalConfig.title}
+				message={modalConfig.message}
+				onConfirm={modalConfig.onConfirm}
+				onCancel={() => setModalOpen(false)}
+			/>
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-lg mx-auto">
 					<Controller
@@ -195,11 +226,7 @@ export default function OrderForm() {
 										type="button"
 										variant="destructive"
 										size="icon"
-										onClick={() => {
-											if (confirm("Excluir o item?")) {
-												remove(index);
-											}
-										}}
+										onClick={openDeleteModal.bind(null, index)}
 									>
 										<Trash className="w-5 h-5" />
 									</Button>
@@ -215,8 +242,9 @@ export default function OrderForm() {
 						</Button>
 					</div>
 					<Button
-						type="submit"
+						type="button"
 						className="w-full"
+						onClick={openFinishModal}
 					>
 						Salvar pedido
 					</Button>
