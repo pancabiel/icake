@@ -2,6 +2,9 @@ package com.icake.service;
 
 import com.icake.dto.OrderDTO;
 import com.icake.model.Order;
+import com.icake.repository.AddressRepository;
+import com.icake.repository.ClientRepository;
+import com.icake.repository.ItemRepository;
 import com.icake.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,9 +16,18 @@ import java.util.stream.Collectors;
 @Service
 public class OrderService {
     private final OrderRepository orderRepository;
+    private final ClientRepository clientRepository;
+    private final AddressRepository addressRepository;
+    private final ItemRepository itemRepository;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository,
+                        ClientRepository clientRepository,
+                        AddressRepository addressRepository,
+                        ItemRepository itemRepository) {
         this.orderRepository = orderRepository;
+        this.clientRepository = clientRepository;
+        this.addressRepository = addressRepository;
+        this.itemRepository = itemRepository;
     }
 
     @Transactional(readOnly = true)
@@ -32,7 +44,22 @@ public class OrderService {
 
     @Transactional
     public Order save(Order order) {
-        return orderRepository.save(order);
+        // Fetch references instead of using detached entities
+        order.setClient(clientRepository.getReferenceById(order.getClient().getId()));
+        order.setAddress(addressRepository.getReferenceById(order.getAddress().getId()));
+
+        // Ensure each OrderItem points to the Order and has managed Item references
+        if (order.getItems() != null) {
+            order.getItems().forEach(oi -> {
+                oi.setOrder(order);
+                oi.setItem(itemRepository.getReferenceById(oi.getItem().getId()));
+            });
+        }
+
+        Order saved = orderRepository.save(order);
+
+        // Return a fully initialized version
+        return orderRepository.findByIdWithRelations(saved.getId()).orElseThrow();
     }
 
     @Transactional

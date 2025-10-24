@@ -30,8 +30,9 @@ public class OrderController {
     }
 
     @PostMapping
-    public Order create(@RequestBody Order order) {
-        return orderService.save(order);
+    public OrderDTO create(@RequestBody Order order) {
+        Order saved = orderService.save(order);
+        return new OrderDTO(saved);
     }
 
     @PutMapping("/{id}")
