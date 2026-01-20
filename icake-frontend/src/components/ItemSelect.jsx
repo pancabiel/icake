@@ -8,8 +8,8 @@ export default function ItemSelect({ items, value, onChange }) {
     query === ""
       ? items
       : items.filter((i) =>
-          i.name.toLowerCase().includes(query.toLowerCase())
-        );
+        i.name.toLowerCase().includes(query.toLowerCase())
+      );
 
   return (
     <Combobox value={value} onChange={onChange}>
@@ -19,15 +19,18 @@ export default function ItemSelect({ items, value, onChange }) {
           className="w-full border p-2 rounded"
           onChange={(e) => setQuery(e.target.value)}
           displayValue={(id) => items.find(i => i.id === id)?.name || ""}
+          autoComplete="off"
         />
         <ComboboxOptions className="absolute w-full mt-1 border rounded bg-white z-10 max-h-40 overflow-auto">
           {filteredItems.length === 0 && query !== "" ? (
-            <ComboboxOption value={query} key="new-item">
+            <ComboboxOption value={query} key="new-item"
+              className="cursor-pointer p-2 rounded-md data-focus:bg-blue-100 transition-colors">
               <span>Criar "{query}"</span>
             </ComboboxOption>
           ) : (
             filteredItems.map((item) => (
-              <ComboboxOption key={item.id} value={item.id}>
+              <ComboboxOption key={item.id} value={item.id}
+                className="cursor-pointer p-2 rounded-md data-focus:bg-blue-100 transition-colors">
                 {item.name}
               </ComboboxOption>
             ))

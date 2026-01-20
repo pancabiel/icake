@@ -93,7 +93,7 @@ export default function OrderForm() {
 			const order = await createOrder(values);
 			form.reset();
 		} catch (err) {
-			
+
 		}
 	}
 
@@ -130,14 +130,14 @@ export default function OrderForm() {
 						name="addressId"
 						render={({ field }) => {
 							const selectedClient = form.watch("clientId");
-							const isNewClient = !clients.find(c => c.id === selectedClient);
+							const isNewClient = !clients.find(c => c.id === selectedClient?.id);
 
 							return (
 								<FormItem>
 									<FormLabel>Endereço</FormLabel>
 									<FormControl>
 										<AddressSelect
-											clientId={isNewClient ? null : selectedClient} // only fetch addresses if existing client
+											clientId={isNewClient ? null : selectedClient?.id} // only fetch addresses if existing client
 											value={field.value}
 											onChange={field.onChange}
 											disabled={!selectedClient} // disabled if no client selected
@@ -156,18 +156,19 @@ export default function OrderForm() {
 								<FormLabel>Data</FormLabel>
 								<FormControl>
 									<DatePicker
-          							className="w-full border p-2 rounded"
+										className="w-full border p-2 rounded"
 										selected={field.value ? new Date(field.value) : null}
 										onChange={(date) => field.onChange(date)}
-          							dateFormat="dd/MM/yyyy"
-			 						/>
+										dateFormat="dd/MM/yyyy"
+										autoComplete="off"
+									/>
 								</FormControl>
 							</FormItem>
 						)}
 					/>
 
 					<div className="space-y-4">
-						<h3 className="font-semibold">Itens</h3>
+						<h3 className="font-semibold text-2xl">Itens</h3>
 						{fields.map((item, index) => (
 							<div key={item.id} className="space-y-2">
 								<div className="flex gap-4 items-end">
@@ -193,9 +194,9 @@ export default function OrderForm() {
 										name={`items.${index}.quantity`}
 										render={({ field }) => (
 											<FormItem className="w-24">
-												<FormLabel>Qntd</FormLabel>
+												<FormLabel>Qntd.</FormLabel>
 												<FormControl>
-													<Input type="number" {...field} className="h-11"/>
+													<Input type="number" {...field} className="h-11" min="1" />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -233,8 +234,8 @@ export default function OrderForm() {
 								</div>
 							</div>
 						))}
-						<Button 
-							type="button" 
+						<Button
+							type="button"
 							variant="secondary"
 							className="w-full"
 							onClick={() => append({ productId: "", quantity: 1 })}>
