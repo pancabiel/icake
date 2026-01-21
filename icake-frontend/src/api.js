@@ -12,10 +12,10 @@ export async function createOrder(values) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
          client: {
-            id: values.clientId
+            id: values.clientId.id
          },
          address: {
-            id: values.addressId
+            id: values.addressId.id
          },
          date: values.date,
          items: values.items.map(item => ({
@@ -25,9 +25,9 @@ export async function createOrder(values) {
       }),
    });
 
-  if (!res.ok) {
-    throw new Error(`Failed to create order: ${res.status}`);
-  }
+   if (!res.ok) {
+      throw new Error(`Failed to create order: ${res.status}`);
+   }
 
-  return res.json();
+   return res.json();
 }

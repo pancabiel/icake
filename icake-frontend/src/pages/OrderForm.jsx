@@ -23,6 +23,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import ItemSelect from "@/components/ItemSelect";
 import { Trash } from "lucide-react";
 import ConfirmModal from "@/components/ConfirmModal";
+import AddressModal from "@/components/AddressModal";
 
 const orderSchema = z.object({
 	clientId: z.string().nonempty("Client is required"),
@@ -44,6 +45,7 @@ export default function OrderForm() {
 	const [items, setItems] = useState([]);
 	const [modalOpen, setModalOpen] = useState(false);
 	const [modalConfig, setModalConfig] = useState({});
+	const [addressModalOpen, setAddressModalOpen] = useState(false);
 
 	const openDeleteModal = (index) => {
 		setModalConfig({
@@ -88,6 +90,25 @@ export default function OrderForm() {
 		name: "items",
 	});
 
+	async function handleCreateAddress(data) {
+		try {
+			const res = await api.post("/addresses", {
+				clientId: selectedClient.id,
+				zipCode: data.zipCode,
+				number: data.number,
+				complement: data.complement
+			});
+
+			const newAddress = res.data;
+
+			form.setValue("addressId", newAddress.id);
+			setAddressModalOpen(false);
+		} catch (err) {
+			console.error(err);
+			alert("Erro ao criar endereço");
+		}
+	}
+
 	async function onSubmit(values) {
 		try {
 			const order = await createOrder(values);
@@ -105,6 +126,11 @@ export default function OrderForm() {
 				message={modalConfig.message}
 				onConfirm={modalConfig.onConfirm}
 				onCancel={() => setModalOpen(false)}
+			/>
+			<AddressModal
+				open={addressModalOpen}
+				onClose={() => setAddressModalOpen(false)}
+				onSave={handleCreateAddress}
 			/>
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-lg mx-auto">
@@ -136,12 +162,26 @@ export default function OrderForm() {
 								<FormItem>
 									<FormLabel>Endereço</FormLabel>
 									<FormControl>
-										<AddressSelect
-											clientId={isNewClient ? null : selectedClient?.id} // only fetch addresses if existing client
-											value={field.value}
-											onChange={field.onChange}
-											disabled={!selectedClient} // disabled if no client selected
-										/>
+										<div className="flex gap-2">
+											<div className="flex-1">
+												<AddressSelect
+													clientId={isNewClient ? null : selectedClient?.id}
+													value={field.value}
+													onChange={field.onChange}
+													disabled={!selectedClient}
+												/>
+											</div>
+
+											<button
+												type="button"
+												onClick={() => setAddressModalOpen(true)}
+												className="px-3 border rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+												disabled={!selectedClient}
+											>
+												+
+											</button>
+										</div>
+
 									</FormControl>
 								</FormItem>
 							);
