@@ -10,7 +10,10 @@ public class AddressDTO {
     private String street;
     private String number;
     private String complement;
-    private String cityName;
+    private CityDTO city;
+
+    public AddressDTO() {
+    }
 
     public AddressDTO(Address address) {
         this.id = address.getId();
@@ -19,7 +22,7 @@ public class AddressDTO {
         this.street = address.getStreet();
         this.number = address.getNumber();
         this.complement = address.getComplement();
-        this.cityName = address.getCity() != null ? address.getCity().getName() : null;
+        this.city = new CityDTO(address.getCity());
     }
 
     public Long getId() {
@@ -70,11 +73,11 @@ public class AddressDTO {
         this.complement = complement;
     }
 
-    public String getCityName() {
-        return cityName;
+    public CityDTO getCity() {
+        return city;
     }
 
-    public void setCityName(String cityName) {
-        this.cityName = cityName;
+    public void setCity(CityDTO city) {
+        this.city = city;
     }
 }

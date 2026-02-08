@@ -35,20 +35,27 @@ export default function AddressModal({ open, onClose, onSave }) {
             .catch(err => console.error("Failed to fetch cities", err));
     }, []);
 
+    // Only show cities when user starts typing, and limit to 50 results for performance
     const filteredCities =
         query === ''
-            ? cities
-            : cities.filter((city) => {
-                return city.name.toLowerCase().includes(query.toLowerCase())
-            })
+            ? []
+            : cities
+                .filter((city) =>
+                    city.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                        .startsWith(query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+                )
+                .slice(0, 50)
 
-    // Watch for CEP changes
+    // Debounced CEP lookup - triggers 500ms after user stops typing
     useEffect(() => {
         const subscription = form.watch((value, { name, type }) => {
             if (name === 'zipCode') {
                 const cep = value.zipCode?.replace(/\D/g, '');
                 if (cep?.length === 8) {
-                    handleCepLookup(cep);
+                    const timeoutId = setTimeout(() => {
+                        handleCepLookup(cep);
+                    }, 500);
+                    return () => clearTimeout(timeoutId);
                 }
             }
         });
@@ -78,7 +85,16 @@ export default function AddressModal({ open, onClose, onSave }) {
     }
 
     function handleSubmit(values) {
-        onSave(values);
+        // Find the city object by name to get its id
+        const cityMatch = cities.find(c => c.name === values.city);
+
+        onSave({
+            zipCode: values.zipCode,
+            street: values.street,
+            number: values.number,
+            complement: values.complement,
+            city: cityMatch ? { id: cityMatch.id } : null
+        });
         form.reset();
         setQuery('');
     }
@@ -100,6 +116,7 @@ export default function AddressModal({ open, onClose, onSave }) {
                         <FormField
                             control={form.control}
                             name="zipCode"
+                            autoComplete="off"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>CEP</FormLabel>
@@ -110,6 +127,13 @@ export default function AddressModal({ open, onClose, onSave }) {
                                             inputMode="numeric"
                                             maxLength={9}
                                             autoComplete="off"
+                                            onBlur={(e) => {
+                                                field.onBlur();
+                                                const cep = e.target.value?.replace(/\D/g, '');
+                                                if (cep?.length === 8) {
+                                                    handleCepLookup(cep);
+                                                }
+                                            }}
                                         />
                                     </FormControl>
                                 </FormItem>
@@ -137,7 +161,11 @@ export default function AddressModal({ open, onClose, onSave }) {
                                                 </ComboboxButton>
                                             </div>
                                             <ComboboxOptions className="absolute z-10 mt-1 max-h-60 w-[calc(100%-3rem)] overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
-                                                {filteredCities.length === 0 && query !== '' ? (
+                                                {query === '' ? (
+                                                    <div className="relative cursor-default select-none py-2 px-4 text-gray-500">
+                                                        Digite para buscar...
+                                                    </div>
+                                                ) : filteredCities.length === 0 ? (
                                                     <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
                                                         Nada encontrado.
                                                     </div>
@@ -182,6 +210,7 @@ export default function AddressModal({ open, onClose, onSave }) {
                         <FormField
                             control={form.control}
                             name="street"
+                            autoComplete="off"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Rua</FormLabel>
@@ -189,6 +218,7 @@ export default function AddressModal({ open, onClose, onSave }) {
                                         <Input
                                             {...field}
                                             placeholder="Nome da rua"
+                                            autoComplete="off"
                                         />
                                     </FormControl>
                                 </FormItem>

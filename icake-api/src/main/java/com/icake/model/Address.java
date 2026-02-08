@@ -6,8 +6,6 @@ import jakarta.persistence.*;
 @Table(name = "addresses")
 public class Address extends BaseEntity {
 
-    private String resume;
-
     @Column(name = "zip_code")
     private String zipCode;
     private String street;
@@ -18,12 +16,12 @@ public class Address extends BaseEntity {
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
 
+    @Transient
     public String getResume() {
-        return resume;
-    }
-
-    public void setResume(String resume) {
-        this.resume = resume;
+        if (street != null && number != null) {
+            return street + ", " + number;
+        }
+        return "";
     }
 
     public String getZipCode() {

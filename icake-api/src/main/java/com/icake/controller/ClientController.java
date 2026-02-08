@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/clients")
@@ -61,5 +62,20 @@ public class ClientController {
                 .stream()
                 .map(AddressDTO::new)
                 .toList();
+    }
+
+    @PostMapping("/{clientId}/addresses")
+    public ResponseEntity<AddressDTO> createAddressForClient(@PathVariable Long clientId, @RequestBody AddressDTO addressDTO) {
+        Optional<Client> clientOpt = clientService.findById(clientId);
+        if (clientOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        try {
+            AddressDTO createdAddress = addressService.createAddressForClient(clientId, addressDTO);
+            return ResponseEntity.ok(createdAddress);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

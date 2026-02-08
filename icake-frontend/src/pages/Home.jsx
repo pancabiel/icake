@@ -7,7 +7,7 @@ export default function Home() {
 	const [orders, setOrders] = useState([]);
 
 	useEffect(() => {
-    fetchOrders()
+		fetchOrders()
 			.then((data) => setOrders(data))
 			.catch((err) => console.error("Error fetching orders:", err));
 	}, []);
@@ -15,21 +15,21 @@ export default function Home() {
 	return <div>
 		<Header />
 		<div className="p-4">
-				{orders.length === 0 ? (
-					<p>No orders yet.</p>
-				) : (
-					orders.map((order) => (
-						<OrderCard
-							key={order.id}
-							date={new Date(order.date).toLocaleDateString("pt-BR")}
-							name={order.clientName}
-							address={order.address}
-							details={order.items
-								.map((orderItem) => `${orderItem.quantity}x ${orderItem.item.name}`)
-								.join(", ")}
-						/>
-					))
-				)}
+			{orders.length === 0 ? (
+				<p>Nenhum pedido pendente.</p>
+			) : (
+				orders.map((order) => (
+					<OrderCard
+						key={order.id}
+						date={new Date(order.date).toLocaleDateString("pt-BR")}
+						name={order.clientName}
+						address={order.address}
+						details={order.items
+							.map((orderItem) => `${orderItem.quantity} ${orderItem.item.name}`)
+							.join(", ")}
+					/>
+				))
+			)}
 		</div>
 	</div>;
 }

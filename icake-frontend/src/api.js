@@ -8,16 +8,28 @@ export const fetchItems = () => fetch(`${API_BASE_URL}/items`).then(res => res.j
 export const fetchAddressesByClientId = (clientId) => fetch(`${API_BASE_URL}/clients/${clientId}/addresses`).then(res => res.json());
 
 export async function createOrder(values) {
+   // Build client object: send id for existing, name for new
+   const client = values.client.type === "new"
+      ? { name: values.client.name }
+      : { id: values.client.id };
+
+   // Build address object: send id for existing, full data for new
+   const address = values.address.type === "new"
+      ? {
+         zipCode: values.address.zipCode,
+         street: values.address.street,
+         number: values.address.number,
+         complement: values.address.complement,
+         city: values.address.city
+      }
+      : { id: values.address.id };
+
    const res = await fetch(`${API_BASE_URL}/orders`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-         client: {
-            id: values.clientId.id
-         },
-         address: {
-            id: values.addressId.id
-         },
+         client,
+         address,
          date: values.date,
          items: values.items.map(item => ({
             item: { id: item.productId },
@@ -33,8 +45,8 @@ export async function createOrder(values) {
    return res.json();
 }
 
-export const createAddress = (address) => fetch(`${API_BASE_URL}/addresses`, {
+export const createAddress = (clientId, addressDTO) => fetch(`${API_BASE_URL}/clients/${clientId}/addresses`, {
    method: "POST",
    headers: { "Content-Type": "application/json" },
-   body: JSON.stringify(address),
+   body: JSON.stringify(addressDTO),
 });

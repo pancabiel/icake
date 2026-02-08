@@ -15,7 +15,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { useEffect, useState } from "react";
-import { createOrder, fetchClients, fetchItems } from "@/api";
+import { createAddress, createOrder, fetchClients, fetchItems } from "@/api";
 import ClientSelect from "@/components/ClientSelect";
 import AddressSelect from "@/components/AddressSelect";
 import DatePicker from "react-datepicker";
@@ -24,9 +24,11 @@ import ItemSelect from "@/components/ItemSelect";
 import { Trash } from "lucide-react";
 import ConfirmModal from "@/components/ConfirmModal";
 import AddressModal from "@/components/AddressModal";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const orderSchema = z.object({
-	clientId: z.string().nonempty("Client is required"),
+	client: z.any(),
 	date: z.date({ required_error: "Date is required" })
 });
 
@@ -34,8 +36,8 @@ export default function OrderForm() {
 	const form = useForm({
 		resolver: zodResolver(orderSchema),
 		defaultValues: {
-			clientId: "",
-			addressId: "",
+			client: null,
+			address: null,
 			date: null,
 			items: [{ productId: "", quantity: 1 }],
 		},
@@ -46,6 +48,7 @@ export default function OrderForm() {
 	const [modalOpen, setModalOpen] = useState(false);
 	const [modalConfig, setModalConfig] = useState({});
 	const [addressModalOpen, setAddressModalOpen] = useState(false);
+	const [addressRefreshKey, setAddressRefreshKey] = useState(0);
 
 	const openDeleteModal = (index) => {
 		setModalConfig({
@@ -82,8 +85,8 @@ export default function OrderForm() {
 	}, [])
 
 	useEffect(() => {
-		form.setValue("addressId", ""); // reset address whenever client changes
-	}, [form.watch("clientId")]);
+		form.setValue("address", null); // reset address whenever client changes
+	}, [form.watch("client")]);
 
 	const { fields, append, remove } = useFieldArray({
 		control: form.control,
@@ -91,21 +94,43 @@ export default function OrderForm() {
 	});
 
 	async function handleCreateAddress(data) {
-		try {
-			const res = await api.post("/addresses", {
-				clientId: selectedClient.id,
+		const selectedClient = form.watch("client");
+		const isNewClient = selectedClient?.type === "new";
+
+		if (isNewClient) {
+			// For new clients, store address data locally (will be created with the order)
+			form.setValue("address", {
+				type: "new",
 				zipCode: data.zipCode,
+				street: data.street,
 				number: data.number,
-				complement: data.complement
+				complement: data.complement,
+				city: data.city
 			});
-
-			const newAddress = res.data;
-
-			form.setValue("addressId", newAddress.id);
 			setAddressModalOpen(false);
-		} catch (err) {
-			console.error(err);
-			alert("Erro ao criar endereço");
+		} else {
+			// For existing clients, create address via API
+			try {
+				const clientId = selectedClient?.id;
+				const res = await createAddress(clientId, {
+					zipCode: data.zipCode,
+					street: data.street,
+					number: data.number,
+					complement: data.complement,
+					city: data.city
+				});
+
+				const newAddress = await res.json();
+
+				// Store the full address so AddressSelect can display it
+				form.setValue("address", newAddress);
+				// Trigger refresh of address list
+				setAddressRefreshKey(prev => prev + 1);
+				setAddressModalOpen(false);
+			} catch (err) {
+				console.error(err);
+				toast.error("Erro ao criar endereço");
+			}
 		}
 	}
 
@@ -113,13 +138,34 @@ export default function OrderForm() {
 		try {
 			const order = await createOrder(values);
 			form.reset();
+			setAddressRefreshKey(0); // Reset address cache
+			toast.success("Pedido criado com sucesso!");
 		} catch (err) {
-
+			console.error(err);
+			toast.error("Erro ao criar pedido");
 		}
 	}
 
+	const handleKeyDown = (e) => {
+		if (e.key === "Enter") {
+			const target = e.target;
+			// Allow Enter for textareas and buttons (if they need it)
+			if (target.tagName === "TEXTAREA") {
+				return;
+			}
+
+			e.preventDefault();
+			const formElements = Array.from(e.currentTarget.querySelectorAll("input, select, textarea"));
+			const index = formElements.indexOf(target);
+			if (index > -1 && index < formElements.length - 1) {
+				formElements[index + 1].focus();
+			}
+		}
+	};
+
 	return (
 		<div className="p-4 sm:p-6 md:p-8 max-w-3xl mx-auto">
+			<ToastContainer />
 			<ConfirmModal
 				isOpen={modalOpen}
 				title={modalConfig.title}
@@ -133,10 +179,14 @@ export default function OrderForm() {
 				onSave={handleCreateAddress}
 			/>
 			<Form {...form}>
-				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-lg mx-auto">
+				<form
+					onSubmit={form.handleSubmit(onSubmit)}
+					onKeyDown={handleKeyDown}
+					className="space-y-6 max-w-lg mx-auto"
+				>
 					<Controller
 						control={form.control}
-						name="clientId"
+						name="client"
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>Cliente</FormLabel>
@@ -153,10 +203,10 @@ export default function OrderForm() {
 
 					<Controller
 						control={form.control}
-						name="addressId"
+						name="address"
 						render={({ field }) => {
-							const selectedClient = form.watch("clientId");
-							const isNewClient = !clients.find(c => c.id === selectedClient?.id);
+							const selectedClient = form.watch("client");
+							const isNewClient = selectedClient?.type === "new";
 
 							return (
 								<FormItem>
@@ -169,6 +219,7 @@ export default function OrderForm() {
 													value={field.value}
 													onChange={field.onChange}
 													disabled={!selectedClient}
+													refreshKey={addressRefreshKey}
 												/>
 											</div>
 
