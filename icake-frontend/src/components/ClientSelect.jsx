@@ -15,6 +15,7 @@ export default function ClientSelect({ clients, value, onChange }) {
     <Combobox value={value} onChange={onChange}>
       <div className="relative">
         <ComboboxInput
+          id="client-select-input"
           placeholder="Nome do cliente"
           className="w-full border p-2 rounded"
           onChange={(e) => setQuery(e.target.value)}

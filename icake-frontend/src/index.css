@@ -49,6 +49,10 @@ header {
     color: white;
 }
 
+footer {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
 @theme inline {
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);

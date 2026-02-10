@@ -18,8 +18,7 @@ import { useEffect, useState } from "react";
 import { createAddress, createOrder, fetchClients, fetchItems } from "@/api";
 import ClientSelect from "@/components/ClientSelect";
 import AddressSelect from "@/components/AddressSelect";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+
 import ItemSelect from "@/components/ItemSelect";
 import { Trash } from "lucide-react";
 import ConfirmModal from "@/components/ConfirmModal";
@@ -110,16 +109,17 @@ export default function OrderForm() {
 			setAddressModalOpen(false);
 		} else {
 			// For existing clients, create address via API
-			try {
-				const clientId = selectedClient?.id;
-				const res = await createAddress(clientId, {
-					zipCode: data.zipCode,
-					street: data.street,
-					number: data.number,
-					complement: data.complement,
-					city: data.city
-				});
+			const clientId = selectedClient?.id;
+			const res = await createAddress(clientId, {
+				zipCode: data.zipCode,
+				street: data.street,
+				number: data.number,
+				complement: data.complement,
+				city: data.city
+			});
 
+			if (res.ok) {
+				await new Promise(resolve => setTimeout(resolve, 500));
 				const newAddress = await res.json();
 
 				// Store the full address so AddressSelect can display it
@@ -127,9 +127,10 @@ export default function OrderForm() {
 				// Trigger refresh of address list
 				setAddressRefreshKey(prev => prev + 1);
 				setAddressModalOpen(false);
-			} catch (err) {
-				console.error(err);
+			} else {
 				toast.error("Erro ao criar endereço");
+				await new Promise(resolve => setTimeout(resolve, 500));
+				throw res; // Re-throw to inform the modal
 			}
 		}
 	}
@@ -152,6 +153,16 @@ export default function OrderForm() {
 			// Allow Enter for textareas and buttons (if they need it)
 			if (target.tagName === "TEXTAREA") {
 				return;
+			}
+
+			// Special case: Client select + New Client -> Open Address Modal
+			if (target.id === "client-select-input") {
+				const selectedClient = form.getValues("client");
+				if (selectedClient?.type === "new") {
+					e.preventDefault();
+					setAddressModalOpen(true);
+					return;
+				}
 			}
 
 			e.preventDefault();
@@ -177,6 +188,7 @@ export default function OrderForm() {
 				open={addressModalOpen}
 				onClose={() => setAddressModalOpen(false)}
 				onSave={handleCreateAddress}
+				isNewClient={form.watch("client")?.type === "new"}
 			/>
 			<Form {...form}>
 				<form
@@ -213,20 +225,25 @@ export default function OrderForm() {
 									<FormLabel>Endereço</FormLabel>
 									<FormControl>
 										<div className="flex gap-2">
-											<div className="flex-1">
+											<div
+												className={`flex-1 ${isNewClient ? "cursor-pointer" : ""}`}
+												onClick={() => isNewClient && setAddressModalOpen(true)}
+											>
 												<AddressSelect
 													clientId={isNewClient ? null : selectedClient?.id}
 													value={field.value}
 													onChange={field.onChange}
 													disabled={!selectedClient}
 													refreshKey={addressRefreshKey}
+													isNewClient={isNewClient}
 												/>
 											</div>
 
 											<button
 												type="button"
 												onClick={() => setAddressModalOpen(true)}
-												className="px-3 border rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+												className={`px-3 border rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent ${isNewClient ? "bg-red-500 text-white border-red-500 hover:bg-red-600" : ""
+													}`}
 												disabled={!selectedClient}
 											>
 												+
@@ -242,20 +259,47 @@ export default function OrderForm() {
 					<FormField
 						control={form.control}
 						name="date"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Data</FormLabel>
-								<FormControl>
-									<DatePicker
-										className="w-full border p-2 rounded"
-										selected={field.value ? new Date(field.value) : null}
-										onChange={(date) => field.onChange(date)}
-										dateFormat="dd/MM/yyyy"
-										autoComplete="off"
-									/>
-								</FormControl>
-							</FormItem>
-						)}
+						render={({ field }) => {
+							const dateValue = field.value ? new Date(field.value) : null;
+							const displayValue = dateValue ?
+								`${String(dateValue.getDate()).padStart(2, '0')}/${String(dateValue.getMonth() + 1).padStart(2, '0')}/${dateValue.getFullYear()}`
+								: "";
+							const nativeValue = dateValue ? dateValue.toISOString().split('T')[0] : "";
+
+							return (
+								<FormItem>
+									<FormLabel>Data</FormLabel>
+									<FormControl>
+										<div
+											className="relative cursor-pointer"
+											onClick={(e) => {
+												const input = e.currentTarget.querySelector('input[type="date"]');
+												if (input && input.showPicker) {
+													input.showPicker();
+												}
+											}}
+										>
+											<Input
+												type="text"
+												readOnly
+												placeholder="dd/mm/aaaa"
+												className="w-full h-11 pointer-events-none"
+												value={displayValue}
+											/>
+											<input
+												type="date"
+												className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+												value={nativeValue}
+												onChange={(e) => {
+													const val = e.target.value;
+													field.onChange(val ? new Date(val + "T00:00:00") : null);
+												}}
+											/>
+										</div>
+									</FormControl>
+								</FormItem>
+							);
+						}}
 					/>
 
 					<div className="space-y-4">

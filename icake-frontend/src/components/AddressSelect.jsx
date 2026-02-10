@@ -2,7 +2,7 @@ import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headl
 import { useState, useEffect } from "react";
 import { fetchAddressesByClientId } from "@/api";
 
-export default function AddressSelect({ clientId, value, onChange, disabled, refreshKey }) {
+export default function AddressSelect({ clientId, value, onChange, disabled, refreshKey, isNewClient }) {
   const [query, setQuery] = useState("");
   const [addresses, setAddresses] = useState([]);
 
@@ -21,14 +21,20 @@ export default function AddressSelect({ clientId, value, onChange, disabled, ref
         a.street.toLowerCase().includes(query.toLowerCase())
       );
 
+  const getPlaceholder = () => {
+    if (isNewClient) return "Adicione um endereço";
+    if (disabled) return "Selecione um cliente";
+    return "Selecione um endereço";
+  };
+
   return (
-    <Combobox value={value || ""} onChange={onChange} disabled={disabled}>
+    <Combobox value={value || ""} onChange={onChange} disabled={disabled || isNewClient}>
       <div className="relative">
         <ComboboxInput
-          placeholder={disabled ? "Selecione um cliente" : "Selecione um endereço"}
-          className={`w-full border p-2 rounded ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
+          placeholder={getPlaceholder()}
+          className={`w-full border p-2 rounded ${(disabled || isNewClient) ? "bg-gray-100 cursor-not-allowed" : ""} ${isNewClient ? "pointer-events-none" : ""}`}
           onChange={(e) => setQuery(e.target.value)}
-          disabled={disabled}
+          disabled={disabled || isNewClient}
           displayValue={(val) => {
             if (!val) return "";
             // For new addresses in memory, build display string from fields
