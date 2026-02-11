@@ -2,7 +2,7 @@ package com.icake.model;
 
 import jakarta.persistence.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -13,8 +13,7 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date date;
+    private LocalDateTime dateTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id", nullable = false)
@@ -31,12 +30,12 @@ public class Order extends BaseEntity {
         this.client = client;
     }
 
-    public Date getDate() {
-        return date;
+    public LocalDateTime getDateTime() {
+        return dateTime;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
     }
 
     public Address getAddress() {

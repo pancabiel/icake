@@ -28,7 +28,8 @@ import "react-toastify/dist/ReactToastify.css";
 
 const orderSchema = z.object({
 	client: z.any(),
-	date: z.date({ required_error: "Date is required" })
+	date: z.date({ required_error: "Data é obrigatória" }),
+	time: z.string().min(1, { message: "Hora é obrigatória" })
 });
 
 export default function OrderForm() {
@@ -38,7 +39,8 @@ export default function OrderForm() {
 			client: null,
 			address: null,
 			date: null,
-			items: [{ productId: "", quantity: 1 }],
+			time: "08:00",
+			items: [{ productId: "", quantity: 1, note: "" }],
 		},
 	});
 
@@ -48,6 +50,14 @@ export default function OrderForm() {
 	const [modalConfig, setModalConfig] = useState({});
 	const [addressModalOpen, setAddressModalOpen] = useState(false);
 	const [addressRefreshKey, setAddressRefreshKey] = useState(0);
+	const [isMobile, setIsMobile] = useState(false);
+
+	useEffect(() => {
+		const checkMobile = () => setIsMobile(window.innerWidth < 640);
+		checkMobile();
+		window.addEventListener("resize", checkMobile);
+		return () => window.removeEventListener("resize", checkMobile);
+	}, []);
 
 	const openDeleteModal = (index) => {
 		setModalConfig({
@@ -137,7 +147,16 @@ export default function OrderForm() {
 
 	async function onSubmit(values) {
 		try {
-			const order = await createOrder(values);
+			// Combine date and time into LocalDateTime format: yyyy-MM-ddTHH:mm:ss
+			const datePart = values.date.toISOString().split('T')[0];
+			const dateTime = `${datePart}T${values.time}:00`;
+
+			const orderValues = {
+				...values,
+				dateTime
+			};
+
+			const order = await createOrder(orderValues);
 			form.reset();
 			setAddressRefreshKey(0); // Reset address cache
 			toast.success("Pedido criado com sucesso!");
@@ -256,51 +275,130 @@ export default function OrderForm() {
 						}}
 					/>
 
-					<FormField
-						control={form.control}
-						name="date"
-						render={({ field }) => {
-							const dateValue = field.value ? new Date(field.value) : null;
-							const displayValue = dateValue ?
-								`${String(dateValue.getDate()).padStart(2, '0')}/${String(dateValue.getMonth() + 1).padStart(2, '0')}/${dateValue.getFullYear()}`
-								: "";
-							const nativeValue = dateValue ? dateValue.toISOString().split('T')[0] : "";
+					<div className="grid grid-cols-2 gap-4">
+						<FormField
+							control={form.control}
+							name="date"
+							render={({ field }) => {
+								const dateValue = field.value ? new Date(field.value) : null;
+								const displayValue = dateValue ?
+									`${String(dateValue.getDate()).padStart(2, '0')}/${String(dateValue.getMonth() + 1).padStart(2, '0')}/${dateValue.getFullYear()}`
+									: "";
+								const nativeValue = dateValue ? dateValue.toISOString().split('T')[0] : "";
 
-							return (
-								<FormItem>
-									<FormLabel>Data</FormLabel>
-									<FormControl>
-										<div
-											className="relative cursor-pointer"
-											onClick={(e) => {
-												const input = e.currentTarget.querySelector('input[type="date"]');
-												if (input && input.showPicker) {
-													input.showPicker();
-												}
-											}}
-										>
-											<Input
-												type="text"
-												readOnly
-												placeholder="dd/mm/aaaa"
-												className="w-full h-11 pointer-events-none"
-												value={displayValue}
-											/>
-											<input
-												type="date"
-												className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-												value={nativeValue}
-												onChange={(e) => {
-													const val = e.target.value;
-													field.onChange(val ? new Date(val + "T00:00:00") : null);
+								return (
+									<FormItem>
+										<FormLabel>Data</FormLabel>
+										<FormControl>
+											<div
+												className="relative cursor-pointer"
+												onClick={(e) => {
+													const input = e.currentTarget.querySelector('input[type="date"]');
+													if (input && input.showPicker) {
+														input.showPicker();
+													}
 												}}
-											/>
-										</div>
-									</FormControl>
-								</FormItem>
-							);
-						}}
-					/>
+											>
+												<Input
+													type="text"
+													readOnly
+													placeholder="dd/mm/aaaa"
+													className="w-full h-11 pointer-events-none"
+													value={displayValue}
+												/>
+												<input
+													type="date"
+													className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+													value={nativeValue}
+													onChange={(e) => {
+														const val = e.target.value;
+														field.onChange(val ? new Date(val + "T00:00:00") : null);
+													}}
+												/>
+											</div>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								);
+							}}
+						/>
+
+						<FormField
+							control={form.control}
+							name="time"
+							render={({ field }) => {
+								const handleTimeChange = (e) => {
+									let val = e.target.value.replace(/\D/g, "");
+									if (val.length > 4) val = val.slice(0, 4);
+
+									if (val.length >= 3) {
+										const hours = val.slice(0, 2);
+										const minutes = val.slice(2);
+
+										// Basic validation for hours and minutes
+										if (parseInt(hours) > 23) val = "23" + minutes;
+										if (minutes && parseInt(minutes) > 59) val = hours + "59";
+
+										val = val.slice(0, 2) + ":" + val.slice(2);
+									} else if (val.length > 0) {
+										// Validate hours as they are typed
+										if (parseInt(val) > 23) val = "23";
+									}
+									field.onChange(val);
+								};
+
+								if (!isMobile) {
+									return (
+										<FormItem>
+											<FormLabel>Hora</FormLabel>
+											<FormControl>
+												<Input
+													type="text"
+													placeholder="08:00"
+													className="w-full h-11 text-center"
+													value={field.value}
+													onChange={handleTimeChange}
+													maxLength={5}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									);
+								}
+
+								return (
+									<FormItem>
+										<FormLabel>Hora</FormLabel>
+										<FormControl>
+											<div
+												className="relative cursor-pointer"
+												onClick={(e) => {
+													const input = e.currentTarget.querySelector('input[type="time"]');
+													if (input && input.showPicker) {
+														input.showPicker();
+													}
+												}}
+											>
+												<Input
+													type="text"
+													readOnly
+													className="w-full h-11 pointer-events-none text-center"
+													value={field.value}
+												/>
+												<input
+													type="time"
+													className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+													value={field.value}
+													onChange={field.onChange}
+												/>
+											</div>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								);
+							}}
+						/>
+					</div>
 
 					<div className="space-y-4">
 						<h3 className="font-semibold text-2xl">Itens</h3>
@@ -373,7 +471,7 @@ export default function OrderForm() {
 							type="button"
 							variant="secondary"
 							className="w-full"
-							onClick={() => append({ productId: "", quantity: 1 })}>
+							onClick={() => append({ productId: "", quantity: 1, note: "" })}>
 							Adicionar Item
 						</Button>
 					</div>

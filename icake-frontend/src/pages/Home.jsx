@@ -21,7 +21,13 @@ export default function Home() {
 				orders.map((order) => (
 					<OrderCard
 						key={order.id}
-						date={new Date(order.date).toLocaleDateString("pt-BR")}
+						date={new Date(order.dateTime).toLocaleString("pt-BR", {
+							day: "2-digit",
+							month: "2-digit",
+							year: "numeric",
+							hour: "2-digit",
+							minute: "2-digit"
+						})}
 						name={order.clientName}
 						address={order.address}
 						details={order.items

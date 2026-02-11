@@ -30,10 +30,11 @@ export async function createOrder(values) {
       body: JSON.stringify({
          client,
          address,
-         date: values.date,
+         dateTime: values.dateTime,
          items: values.items.map(item => ({
             item: { id: item.productId },
-            quantity: item.quantity
+            quantity: item.quantity,
+            note: item.note
          }))
       }),
    });
