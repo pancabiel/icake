@@ -6,6 +6,7 @@ import OrderForm from "./pages/OrderForm";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Shopping from "./pages/Shoppping";
 import Profile from "./pages/Profile";
+import ItemsManager from "./pages/ItemsManager";
 
 export default function App() {
 	return (
@@ -17,6 +18,7 @@ export default function App() {
 					<Route path="/newOrder" element={<OrderForm />} />
 					<Route path="/shopping" element={<Shopping />} />
 					<Route path="/profile" element={<Profile />} />
+					<Route path="/cardapio" element={<ItemsManager />} />
 				</Routes>
 			</div>
 			<Footer />

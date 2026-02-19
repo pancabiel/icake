@@ -51,3 +51,27 @@ export const createAddress = (clientId, addressDTO) => fetch(`${API_BASE_URL}/cl
    headers: { "Content-Type": "application/json" },
    body: JSON.stringify(addressDTO),
 });
+
+export const createItem = (data) => fetch(`${API_BASE_URL}/items`, {
+   method: "POST",
+   headers: { "Content-Type": "application/json" },
+   body: JSON.stringify(data),
+}).then(res => {
+   if (!res.ok) throw new Error(`Failed to create item: ${res.status}`);
+   return res.json();
+});
+
+export const updateItem = (id, data) => fetch(`${API_BASE_URL}/items/${id}`, {
+   method: "PUT",
+   headers: { "Content-Type": "application/json" },
+   body: JSON.stringify(data),
+}).then(res => {
+   if (!res.ok) throw new Error(`Failed to update item: ${res.status}`);
+   return res.json();
+});
+
+export const deleteItem = (id) => fetch(`${API_BASE_URL}/items/${id}`, {
+   method: "DELETE",
+}).then(res => {
+   if (!res.ok) throw new Error(`Failed to delete item: ${res.status}`);
+});

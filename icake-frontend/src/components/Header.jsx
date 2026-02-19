@@ -1,6 +1,10 @@
-import { Menu, Bell } from "lucide-react";
+import { useState } from "react";
+import { Menu } from "lucide-react";
+import DrawerMenu from "./DrawerMenu";
 
 export default function Header() {
+	const [drawerOpen, setDrawerOpen] = useState(false);
+
 	const today = new Date().toLocaleDateString("pt-BR", {
 		weekday: "long",
 		day: "numeric",
@@ -8,19 +12,23 @@ export default function Header() {
 	});
 
 	return (
-		<header className="flex items-center justify-between px-4 py-3 border-b">
-			{/* Botão hambúrguer */}
-			<button className="p-2">
-				<Menu size={28} />
-			</button>
+		<>
+			<header className="flex items-center justify-between px-4 py-3 border-b">
+				{/* Botão hambúrguer */}
+				<button className="p-2" onClick={() => setDrawerOpen(true)} aria-label="Abrir menu">
+					<Menu size={28} />
+				</button>
 
-			{/* Data centralizada */}
-			<h1 className="text-lg font-semibold">{today}</h1>
+				{/* Data centralizada */}
+				<h1 className="text-lg font-semibold">{today}</h1>
 
-			{/* Botão notificações */}
-			<button className="p-2">
-				<img src="/icon.png" width={30}/>
-			</button>
-		</header>
+				{/* Botão notificações */}
+				<button className="p-2">
+					<img src="/icon.png" width={30} />
+				</button>
+			</header>
+
+			<DrawerMenu open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+		</>
 	);
 }
