@@ -20,20 +20,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: sa-east-1
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./icake-api
-          push: true
-          tags: |
-            pancabiel/icake-backend:latest
-            pancabiel/icake-backend:${{ github.sha }}
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image to ECR
+        run: |
+          docker build -t 442147574987.dkr.ecr.sa-east-1.amazonaws.com/icake-backend:latest .
+          docker push 442147574987.dkr.ecr.sa-east-1.amazonaws.com/icake-backend:latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1
@@ -42,6 +43,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            aws ecr get-login-password --region sa-east-1 | docker login --username AWS --password-stdin 442147574987.dkr.ecr.sa-east-1.amazonaws.com
             cd icake
             docker-compose pull
             docker-compose up -d
