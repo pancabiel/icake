@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "states")
-public class State extends BaseEntity{
+public class State extends BaseEntity {
 
     private String name;
 
