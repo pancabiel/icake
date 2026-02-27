@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,7 +39,6 @@ public class AuthController {
             }
 
             User user = userOpt.get();
-            System.out.println(new BCryptPasswordEncoder().encode("123456"));
             if (!passwordEncoder.matches(request.password(), user.getPassword())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).<LoginResponse>build();
             }

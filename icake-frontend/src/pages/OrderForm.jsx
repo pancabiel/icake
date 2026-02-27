@@ -23,8 +23,7 @@ import ItemSelect from "@/components/ItemSelect";
 import { Trash } from "lucide-react";
 import ConfirmModal from "@/components/ConfirmModal";
 import AddressModal from "@/components/AddressModal";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 const orderSchema = z.object({
 	client: z.any(),
@@ -195,7 +194,7 @@ export default function OrderForm() {
 
 	return (
 		<div className="p-4 sm:p-6 md:p-8 max-w-3xl mx-auto">
-			<ToastContainer />
+
 			<ConfirmModal
 				isOpen={modalOpen}
 				title={modalConfig.title}

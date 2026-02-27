@@ -1,11 +1,60 @@
 // src/api.js
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const fetchCities = () => fetch(`${API_BASE_URL}/cities`).then(res => res.json());
-export const fetchOrders = () => fetch(`${API_BASE_URL}/orders`).then(res => res.json());
-export const fetchClients = () => fetch(`${API_BASE_URL}/clients`).then(res => res.json());
-export const fetchItems = () => fetch(`${API_BASE_URL}/items`).then(res => res.json());
-export const fetchAddressesByClientId = (clientId) => fetch(`${API_BASE_URL}/clients/${clientId}/addresses`).then(res => res.json());
+// ── Auth helpers ────────────────────────────────────────────────────────────────
+
+export function getToken() {
+   return localStorage.getItem("token");
+}
+
+export async function login(email, password) {
+   const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+   });
+
+   if (!res.ok) {
+      throw new Error("Credenciais inválidas");
+   }
+
+   const data = await res.json();
+   localStorage.setItem("token", data.token);
+   return data;
+}
+
+export function logout() {
+   localStorage.removeItem("token");
+   window.location.href = "/login";
+}
+
+// ── Authenticated fetch wrapper ─────────────────────────────────────────────────
+
+async function apiFetch(url, options = {}) {
+   const token = getToken();
+   const headers = { ...options.headers };
+
+   if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+   }
+
+   const res = await fetch(url, { ...options, headers });
+
+   if (res.status === 401) {
+      logout();
+      throw new Error("Sessão expirada");
+   }
+
+   return res;
+}
+
+// ── API functions ───────────────────────────────────────────────────────────────
+
+export const fetchCities = () => apiFetch(`${API_BASE_URL}/cities`).then(res => res.json());
+export const fetchOrders = () => apiFetch(`${API_BASE_URL}/orders`).then(res => res.json());
+export const fetchClients = () => apiFetch(`${API_BASE_URL}/clients`).then(res => res.json());
+export const fetchItems = () => apiFetch(`${API_BASE_URL}/items`).then(res => res.json());
+export const fetchAddressesByClientId = (clientId) => apiFetch(`${API_BASE_URL}/clients/${clientId}/addresses`).then(res => res.json());
 
 export async function createOrder(values) {
    // Build client object: send id for existing, name for new
@@ -24,7 +73,7 @@ export async function createOrder(values) {
       }
       : { id: values.address.id };
 
-   const res = await fetch(`${API_BASE_URL}/orders`, {
+   const res = await apiFetch(`${API_BASE_URL}/orders`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -46,13 +95,13 @@ export async function createOrder(values) {
    return res.json();
 }
 
-export const createAddress = (clientId, addressDTO) => fetch(`${API_BASE_URL}/clients/${clientId}/addresses`, {
+export const createAddress = (clientId, addressDTO) => apiFetch(`${API_BASE_URL}/clients/${clientId}/addresses`, {
    method: "POST",
    headers: { "Content-Type": "application/json" },
    body: JSON.stringify(addressDTO),
 });
 
-export const createItem = (data) => fetch(`${API_BASE_URL}/items`, {
+export const createItem = (data) => apiFetch(`${API_BASE_URL}/items`, {
    method: "POST",
    headers: { "Content-Type": "application/json" },
    body: JSON.stringify(data),
@@ -61,7 +110,7 @@ export const createItem = (data) => fetch(`${API_BASE_URL}/items`, {
    return res.json();
 });
 
-export const updateItem = (id, data) => fetch(`${API_BASE_URL}/items/${id}`, {
+export const updateItem = (id, data) => apiFetch(`${API_BASE_URL}/items/${id}`, {
    method: "PUT",
    headers: { "Content-Type": "application/json" },
    body: JSON.stringify(data),
@@ -70,7 +119,7 @@ export const updateItem = (id, data) => fetch(`${API_BASE_URL}/items/${id}`, {
    return res.json();
 });
 
-export const deleteItem = (id) => fetch(`${API_BASE_URL}/items/${id}`, {
+export const deleteItem = (id) => apiFetch(`${API_BASE_URL}/items/${id}`, {
    method: "DELETE",
 }).then(res => {
    if (!res.ok) throw new Error(`Failed to delete item: ${res.status}`);

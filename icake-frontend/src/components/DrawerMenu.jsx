@@ -1,5 +1,6 @@
-import { X, UtensilsCrossed } from "lucide-react";
+import { X, UtensilsCrossed, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { logout } from "@/api";
 
 export default function DrawerMenu({ open, onClose }) {
     const navigate = useNavigate();
@@ -55,6 +56,15 @@ export default function DrawerMenu({ open, onClose }) {
                         onClick={() => handleNavigate("/cardapio")}
                     />
                 </nav>
+
+                {/* Logout */}
+                <div className="p-4" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                    <MenuItem
+                        icon={<LogOut size={20} />}
+                        label="Sair"
+                        onClick={logout}
+                    />
+                </div>
             </div>
         </>
     );
