@@ -36,16 +36,16 @@ export default function Login() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-[var(--main-white)] px-4">
-            <div className="w-full max-w-sm space-y-6">
+        <div className="flex h-screen items-center justify-center bg-[var(--main-white)] px-4">
+            <div className="w-full max-w-sm space-y-4">
                 {/* Logo */}
-                <div className="flex flex-col items-center gap-2">
-                    <img src="/icon.png" alt="iCake" width={80} />
-                    <h1 className="text-2xl font-bold text-[var(--main-red)]">iCake</h1>
+                <div className="flex flex-col items-center gap-1">
+                    <img src="/icon.png" alt="iCake" width={60} />
+                    <h1 className="text-xl font-bold text-[var(--main-red)]">iCake</h1>
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
                     <div>
                         <label htmlFor="email" className="mb-1 block text-sm font-medium text-[var(--main-black)]">
                             E-mail

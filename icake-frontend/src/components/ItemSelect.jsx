@@ -22,19 +22,12 @@ export default function ItemSelect({ items, value, onChange }) {
           autoComplete="off"
         />
         <ComboboxOptions className="absolute w-full mt-1 border rounded bg-white z-10 max-h-40 overflow-auto">
-          {filteredItems.length === 0 && query !== "" ? (
-            <ComboboxOption value={query} key="new-item"
+          {filteredItems.map((item) => (
+            <ComboboxOption key={item.id} value={item.id}
               className="cursor-pointer p-2 rounded-md data-focus:bg-blue-100 transition-colors">
-              <span>Criar "{query}"</span>
+              {item.name}
             </ComboboxOption>
-          ) : (
-            filteredItems.map((item) => (
-              <ComboboxOption key={item.id} value={item.id}
-                className="cursor-pointer p-2 rounded-md data-focus:bg-blue-100 transition-colors">
-                {item.name}
-              </ComboboxOption>
-            ))
-          )}
+          ))}
         </ComboboxOptions>
       </div>
     </Combobox>
