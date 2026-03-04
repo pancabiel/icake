@@ -6,24 +6,24 @@ import jakarta.persistence.*;
 @Table(name = "states")
 public class State extends BaseEntity {
 
-	private String name;
+    private String name;
 
-	@Column(name = "state_code", length = 2)
-	private String stateCode;
+    @Column(name = "state_code", length = 2)
+    private String stateCode;
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getStateCode() {
-		return stateCode;
-	}
+    public String getStateCode() {
+        return stateCode;
+    }
 
-	public void setStateCode(String stateCode) {
-		this.stateCode = stateCode;
-	}
+    public void setStateCode(String stateCode) {
+        this.stateCode = stateCode;
+    }
 }

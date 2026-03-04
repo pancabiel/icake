@@ -51,32 +51,10 @@ async function apiFetch(url, options = {}) {
 // ── API functions ───────────────────────────────────────────────────────────────
 
 export const fetchCities = () => apiFetch(`${API_BASE_URL}/cities`).then(res => res.json());
-export const fetchOrders = (status) => {
-   const url = status ? `${API_BASE_URL}/orders?status=${status}` : `${API_BASE_URL}/orders`;
-   return apiFetch(url).then(res => res.json());
-};
-export const fetchOrderById = (id) => apiFetch(`${API_BASE_URL}/orders/${id}`).then(res => res.json());
+export const fetchOrders = () => apiFetch(`${API_BASE_URL}/orders`).then(res => res.json());
 export const fetchClients = () => apiFetch(`${API_BASE_URL}/clients`).then(res => res.json());
 export const fetchItems = () => apiFetch(`${API_BASE_URL}/items`).then(res => res.json());
 export const fetchAddressesByClientId = (clientId) => apiFetch(`${API_BASE_URL}/clients/${clientId}/addresses`).then(res => res.json());
-
-export const deleteOrder = (id) => apiFetch(`${API_BASE_URL}/orders/${id}`, {
-   method: "DELETE",
-}).then(res => {
-   if (!res.ok) throw new Error(`Failed to delete order: ${res.status}`);
-});
-
-export const concludeOrder = (id) => apiFetch(`${API_BASE_URL}/orders/${id}/conclude`, {
-   method: "PATCH",
-}).then(res => {
-   if (!res.ok) throw new Error(`Failed to conclude order: ${res.status}`);
-});
-
-export const unconcludeOrder = (id) => apiFetch(`${API_BASE_URL}/orders/${id}/unconclude`, {
-   method: "PATCH",
-}).then(res => {
-   if (!res.ok) throw new Error(`Failed to unconclude order: ${res.status}`);
-});
 
 export async function createOrder(values) {
    // Build client object: send id for existing, name for new

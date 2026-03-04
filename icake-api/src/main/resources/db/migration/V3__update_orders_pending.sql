@@ -1,1 +1,0 @@
-UPDATE orders SET status = 'PENDING' WHERE status IS NULL;

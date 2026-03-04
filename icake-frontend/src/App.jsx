@@ -3,7 +3,6 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Calendar from "./pages/Calendar";
 import OrderForm from "./pages/OrderForm";
-import ConcludedOrders from "./pages/ConcludedOrders";
 import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
 import Shopping from "./pages/Shoppping";
 import Profile from "./pages/Profile";
@@ -37,11 +36,9 @@ export default function App() {
 						<Route path="/" element={<Home />} />
 						<Route path="/calendar" element={<Calendar />} />
 						<Route path="/newOrder" element={<OrderForm />} />
-						<Route path="/editOrder/:id" element={<OrderForm />} />
 						<Route path="/shopping" element={<Shopping />} />
 						<Route path="/profile" element={<Profile />} />
 						<Route path="/cardapio" element={<ItemsManager />} />
-						<Route path="/concluded" element={<ConcludedOrders />} />
 					</Route>
 				</Route>
 			</Routes>

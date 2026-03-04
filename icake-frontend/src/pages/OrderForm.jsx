@@ -15,8 +15,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { createAddress, createOrder, fetchClients, fetchItems, fetchOrderById } from "@/api";
+import { createAddress, createOrder, fetchClients, fetchItems } from "@/api";
 import ClientSelect from "@/components/ClientSelect";
 import AddressSelect from "@/components/AddressSelect";
 
@@ -26,8 +25,6 @@ import ConfirmModal from "@/components/ConfirmModal";
 import AddressModal from "@/components/AddressModal";
 import { toast } from "react-toastify";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 const orderSchema = z.object({
 	client: z.any(),
 	date: z.date({ required_error: "Data é obrigatória" }),
@@ -35,9 +32,6 @@ const orderSchema = z.object({
 });
 
 export default function OrderForm() {
-	const { id: orderId } = useParams();
-	const navigate = useNavigate();
-	const isEditMode = !!orderId;
 	const form = useForm({
 		resolver: zodResolver(orderSchema),
 		defaultValues: {
@@ -96,31 +90,10 @@ export default function OrderForm() {
 	useEffect(() => {
 		fetchItems()
 			.then(setItems);
-	}, []);
-
-	// Load existing order data in edit mode
-	useEffect(() => {
-		if (!isEditMode) return;
-		fetchOrderById(orderId).then((order) => {
-			const dt = new Date(order.dateTime);
-			form.setValue("client", { id: order.client.id, name: order.client.name, type: "existing" });
-			form.setValue("address", order.address);
-			form.setValue("date", dt);
-			form.setValue("time", `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}`);
-			if (order.items && order.items.length > 0) {
-				form.setValue("items", order.items.map((oi) => ({
-					productId: oi.item.id,
-					quantity: oi.quantity,
-					note: oi.note || ""
-				})));
-			}
-		});
-	}, [isEditMode, orderId]);
+	}, [])
 
 	useEffect(() => {
-		if (!isEditMode) {
-			form.setValue("address", null); // reset address whenever client changes (create mode only)
-		}
+		form.setValue("address", null); // reset address whenever client changes
 	}, [form.watch("client")]);
 
 	const { fields, append, remove } = useFieldArray({
@@ -177,46 +150,18 @@ export default function OrderForm() {
 			const datePart = values.date.toISOString().split('T')[0];
 			const dateTime = `${datePart}T${values.time}:00`;
 
-			if (isEditMode) {
-				// Update existing order via PUT
-				const { getToken } = await import("@/api");
-				const res = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
-					method: "PUT",
-					headers: {
-						"Content-Type": "application/json",
-						"Authorization": `Bearer ${getToken()}`
-					},
-					body: JSON.stringify({
-						client: values.client.type === "new"
-							? { name: values.client.name }
-							: { id: values.client.id },
-						address: values.address.type === "new"
-							? { zipCode: values.address.zipCode, street: values.address.street, number: values.address.number, complement: values.address.complement, city: values.address.city }
-							: { id: values.address.id },
-						dateTime,
-						items: values.items.map(item => ({
-							item: { id: item.productId },
-							quantity: item.quantity,
-							note: item.note
-						}))
-					})
-				});
-				if (!res.ok) throw new Error("Failed to update order");
-				toast.success("Pedido atualizado com sucesso!");
-				navigate("/");
-			} else {
-				const orderValues = {
-					...values,
-					dateTime
-				};
-				await createOrder(orderValues);
-				form.reset();
-				setAddressRefreshKey(0);
-				toast.success("Pedido criado com sucesso!");
-			}
+			const orderValues = {
+				...values,
+				dateTime
+			};
+
+			const order = await createOrder(orderValues);
+			form.reset();
+			setAddressRefreshKey(0); // Reset address cache
+			toast.success("Pedido criado com sucesso!");
 		} catch (err) {
 			console.error(err);
-			toast.error(isEditMode ? "Erro ao atualizar pedido" : "Erro ao criar pedido");
+			toast.error("Erro ao criar pedido");
 		}
 	}
 
@@ -534,7 +479,7 @@ export default function OrderForm() {
 						className="w-full"
 						onClick={openFinishModal}
 					>
-						{isEditMode ? "Atualizar pedido" : "Salvar pedido"}
+						Salvar pedido
 					</Button>
 				</form>
 			</Form>

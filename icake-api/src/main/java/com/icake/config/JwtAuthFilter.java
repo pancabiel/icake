@@ -19,47 +19,47 @@ import reactor.core.publisher.Mono;
 @Component
 public class JwtAuthFilter implements WebFilter {
 
-	private final JwtUtil jwtUtil;
-	private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
-	public JwtAuthFilter(JwtUtil jwtUtil, UserRepository userRepository) {
-		this.jwtUtil = jwtUtil;
-		this.userRepository = userRepository;
-	}
+    public JwtAuthFilter(JwtUtil jwtUtil, UserRepository userRepository) {
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
+    }
 
-	@Override
-	public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-		String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-			return chain.filter(exchange);
-		}
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return chain.filter(exchange);
+        }
 
-		String token = authHeader.substring(7);
+        String token = authHeader.substring(7);
 
-		if (!jwtUtil.isTokenValid(token)) {
-			exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-			return exchange.getResponse().setComplete();
-		}
+        if (!jwtUtil.isTokenValid(token)) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
 
-		String email = jwtUtil.extractEmail(token);
+        String email = jwtUtil.extractEmail(token);
 
-		return Mono.fromCallable(() -> userRepository.findByEmail(email))
-				.flatMap(userOpt -> {
-					if (userOpt.isEmpty()) {
-						exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-						return exchange.getResponse().setComplete();
-					}
+        return Mono.fromCallable(() -> userRepository.findByEmail(email))
+                .flatMap(userOpt -> {
+                    if (userOpt.isEmpty()) {
+                        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                        return exchange.getResponse().setComplete();
+                    }
 
-					var user = userOpt.get();
-					var auth = new UsernamePasswordAuthenticationToken(
-							email,
-							null,
-							List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
-					);
+                    var user = userOpt.get();
+                    var auth = new UsernamePasswordAuthenticationToken(
+                            email,
+                            null,
+                            List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                    );
 
-					return chain.filter(exchange)
-							.contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
-				});
-	}
+                    return chain.filter(exchange)
+                            .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
+                });
+    }
 }

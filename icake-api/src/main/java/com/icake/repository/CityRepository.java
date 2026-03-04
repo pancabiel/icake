@@ -1,17 +1,16 @@
 package com.icake.repository;
 
-import java.util.List;
-
+import com.icake.model.City;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import com.icake.model.City;
+import java.util.List;
 
 public interface CityRepository extends JpaRepository<City, Long> {
 
-	@Query("""
-			    SELECT c FROM City c
-			    JOIN FETCH c.state
-			""")
-	List<City> findAllWithRelations();
+    @Query("""
+    SELECT c FROM City c
+    JOIN FETCH c.state
+""")
+    List<City> findAllWithRelations();
 }

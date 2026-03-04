@@ -20,37 +20,34 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-	private final JwtUtil jwtUtil;
-	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-	public AuthController(JwtUtil jwtUtil, UserRepository userRepository, PasswordEncoder passwordEncoder) {
-		this.jwtUtil = jwtUtil;
-		this.userRepository = userRepository;
-		this.passwordEncoder = passwordEncoder;
-	}
+    public AuthController(JwtUtil jwtUtil, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
-	@PostMapping("/login")
-	public Mono<ResponseEntity<LoginResponse>> login(@RequestBody LoginRequest request) {
-		return Mono.fromCallable(() -> {
-			Optional<User> userOpt = userRepository.findByEmail(request.email());
-			if (userOpt.isEmpty()) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).<LoginResponse>build();
-			}
+    @PostMapping("/login")
+    public Mono<ResponseEntity<LoginResponse>> login(@RequestBody LoginRequest request) {
+        return Mono.fromCallable(() -> {
+            Optional<User> userOpt = userRepository.findByEmail(request.email());
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).<LoginResponse>build();
+            }
 
-			User user = userOpt.get();
-			if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).<LoginResponse>build();
-			}
+            User user = userOpt.get();
+            if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).<LoginResponse>build();
+            }
 
-			String token = jwtUtil.generateToken(user.getEmail());
-			return ResponseEntity.ok(new LoginResponse(token));
-		});
-	}
+            String token = jwtUtil.generateToken(user.getEmail());
+            return ResponseEntity.ok(new LoginResponse(token));
+        });
+    }
 
-	public record LoginRequest(String email, String password) {
-	}
-
-	public record LoginResponse(String token) {
-	}
+    public record LoginRequest(String email, String password) {}
+    public record LoginResponse(String token) {}
 }

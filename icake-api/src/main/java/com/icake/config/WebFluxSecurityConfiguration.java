@@ -13,23 +13,22 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @Configuration(proxyBeanMethods = false)
 public class WebFluxSecurityConfiguration {
 
-	@Bean
-	public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http, JwtAuthFilter jwtAuthFilter) {
-		http.csrf(ServerHttpSecurity.CsrfSpec::disable)
-				.cors(cors -> {
-				})
-				.addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
-				.authorizeExchange(exchanges -> exchanges
-						.pathMatchers("/api/auth/**").permitAll()
-						.pathMatchers("/actuator/**").permitAll()
-						.anyExchange().authenticated()
-				);
+    @Bean
+    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http, JwtAuthFilter jwtAuthFilter) {
+        http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .cors(cors -> {})
+                .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers("/api/auth/**").permitAll()
+                        .pathMatchers("/actuator/**").permitAll()
+                        .anyExchange().authenticated()
+                );
 
-		return http.build();
-	}
+        return http.build();
+    }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

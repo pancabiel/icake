@@ -1,8 +1,7 @@
 package com.icake.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.icake.model.State;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface StateRepository extends JpaRepository<State, Long> {
 

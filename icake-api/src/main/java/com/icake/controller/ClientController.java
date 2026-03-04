@@ -1,86 +1,81 @@
 package com.icake.controller;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.icake.dto.AddressDTO;
 import com.icake.model.Client;
 import com.icake.service.AddressService;
 import com.icake.service.ClientService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/clients")
 public class ClientController {
-	private final ClientService clientService;
-	private final AddressService addressService;
+    private final ClientService clientService;
+    private final AddressService addressService;
 
-	public ClientController(ClientService clientService, AddressService addressService) {
-		this.clientService = clientService;
-		this.addressService = addressService;
-	}
+    public ClientController(ClientService clientService, AddressService addressService) {
+        this.clientService = clientService;
+        this.addressService = addressService;
+    }
 
-	@GetMapping
-	public List<Client> getAll() {
-		return clientService.findAll();
-	}
+    @GetMapping
+    public List<Client> getAll() {
+        return clientService.findAll();
+    }
 
-	@GetMapping("/{id}")
-	public ResponseEntity<Client> getById(@PathVariable Long id) {
-		return clientService.findById(id)
-				.map(ResponseEntity::ok)
-				.orElse(ResponseEntity.notFound().build());
-	}
+    @GetMapping("/{id}")
+    public ResponseEntity<Client> getById(@PathVariable Long id) {
+        return clientService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-	@PostMapping
-	public Client create(@RequestBody Client client) {
-		return clientService.save(client);
-	}
+    @PostMapping
+    public Client create(@RequestBody Client client) {
+        return clientService.save(client);
+    }
 
-	@PutMapping("/{id}")
-	public ResponseEntity<Client> update(@PathVariable Long id, @RequestBody Client client) {
-		if (clientService.findById(id).isEmpty()) {
-			return ResponseEntity.notFound().build();
-		}
-		client.setId(id);
-		return ResponseEntity.ok(clientService.save(client));
-	}
+    @PutMapping("/{id}")
+    public ResponseEntity<Client> update(@PathVariable Long id, @RequestBody Client client) {
+        if (clientService.findById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        client.setId(id);
+        return ResponseEntity.ok(clientService.save(client));
+    }
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> delete(@PathVariable Long id) {
-		if (clientService.findById(id).isEmpty()) {
-			return ResponseEntity.notFound().build();
-		}
-		clientService.deleteById(id);
-		return ResponseEntity.noContent().build();
-	}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        if (clientService.findById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        clientService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 
-	@GetMapping("/{clientId}/addresses")
-	public List<AddressDTO> getAddressesByClient(@PathVariable Long clientId) {
-		return addressService.findByClientId(clientId);
-	}
+    @GetMapping("/{clientId}/addresses")
+    public List<AddressDTO> getAddressesByClient(@PathVariable Long clientId) {
+        return addressService.findByClientId(clientId)
+                .stream()
+                .map(AddressDTO::new)
+                .toList();
+    }
 
-	@PostMapping("/{clientId}/addresses")
-	public ResponseEntity<AddressDTO> createAddressForClient(@PathVariable Long clientId, @RequestBody AddressDTO addressDTO) {
-		Optional<Client> clientOpt = clientService.findById(clientId);
-		if (clientOpt.isEmpty()) {
-			return ResponseEntity.notFound().build();
-		}
-
-		try {
-			AddressDTO createdAddress = addressService.createAddressForClient(clientId, addressDTO);
-			return ResponseEntity.ok(createdAddress);
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().build();
-		}
-	}
+    @PostMapping("/{clientId}/addresses")
+    public ResponseEntity<AddressDTO> createAddressForClient(@PathVariable Long clientId, @RequestBody AddressDTO addressDTO) {
+        Optional<Client> clientOpt = clientService.findById(clientId);
+        if (clientOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        try {
+            AddressDTO createdAddress = addressService.createAddressForClient(clientId, addressDTO);
+            return ResponseEntity.ok(createdAddress);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }
