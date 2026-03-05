@@ -8,27 +8,30 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
 
 @EnableWebFluxSecurity
 @Configuration(proxyBeanMethods = false)
 public class WebFluxSecurityConfiguration {
 
-    @Bean
-    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http, JwtAuthFilter jwtAuthFilter) {
-        http.csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .cors(cors -> {})
-                .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
-                .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/api/auth/**").permitAll()
-                        .pathMatchers("/actuator/**").permitAll()
-                        .anyExchange().authenticated()
-                );
+	@Bean
+	public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http, JwtAuthFilter jwtAuthFilter,
+	                                                        CorsConfigurationSource corsConfigurationSource) {
 
-        return http.build();
-    }
+		http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+				.cors(cors -> cors.configurationSource(corsConfigurationSource))
+				.addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+				.authorizeExchange(exchanges -> exchanges
+						.pathMatchers("/api/auth/**").permitAll()
+						.pathMatchers("/actuator/**").permitAll()
+						.anyExchange().authenticated()
+				);
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+		return http.build();
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 }
