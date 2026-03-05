@@ -6,27 +6,38 @@ import jakarta.persistence.*;
 @Table(name = "client_addresses")
 public class ClientAddress extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "client_id", nullable = false)
-    private Client client;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "client_id", nullable = false)
+	private Client client;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "address_id", nullable = false)
-    private Address address;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "address_id", nullable = false)
+	private Address address;
 
-    public Client getClient() {
-        return client;
-    }
+	@Column(name = "favorite", nullable = false)
+	private boolean favorite = false;
 
-    public void setClient(Client client) {
-        this.client = client;
-    }
+	public Client getClient() {
+		return client;
+	}
 
-    public Address getAddress() {
-        return address;
-    }
+	public void setClient(Client client) {
+		this.client = client;
+	}
 
-    public void setAddress(Address address) {
-        this.address = address;
-    }
+	public Address getAddress() {
+		return address;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
+	}
+
+	public boolean isFavorite() {
+		return favorite;
+	}
+
+	public void setFavorite(boolean favorite) {
+		this.favorite = favorite;
+	}
 }

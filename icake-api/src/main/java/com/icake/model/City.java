@@ -6,25 +6,25 @@ import jakarta.persistence.*;
 @Table(name = "cities")
 public class City extends BaseEntity {
 
-    private String name;
+	private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "state_id", nullable = false)
-    private State state;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "state_id", nullable = false)
+	private State state;
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public State getState() {
-        return state;
-    }
+	public State getState() {
+		return state;
+	}
 
-    public void setState(State state) {
-        this.state = state;
-    }
+	public void setState(State state) {
+		this.state = state;
+	}
 }

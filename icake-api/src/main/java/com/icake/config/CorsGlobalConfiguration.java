@@ -12,23 +12,23 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 @Configuration
 public class CorsGlobalConfiguration {
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration corsConfig = new CorsConfiguration();
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration corsConfig = new CorsConfiguration();
 
-        corsConfig.setAllowedOrigins(List.of(
-                "https://carlapanca.com",
-                "https://www.carlapanca.com",
-                "http://localhost:5173"
-        ));
+		corsConfig.setAllowedOrigins(List.of(
+				"https://carlapanca.com",
+				"https://www.carlapanca.com",
+				"http://localhost:5173"
+		));
 
-        corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        corsConfig.setAllowedHeaders(List.of("*"));
-        corsConfig.setAllowCredentials(true);
+		corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+		corsConfig.setAllowedHeaders(List.of("*"));
+		corsConfig.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfig);
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", corsConfig);
 
-        return source;
-    }
+		return source;
+	}
 }

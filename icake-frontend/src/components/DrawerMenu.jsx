@@ -1,4 +1,4 @@
-import { X, UtensilsCrossed, LogOut } from "lucide-react";
+import { X, UtensilsCrossed, LogOut, CheckCircle, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { logout } from "@/api";
 
@@ -51,9 +51,20 @@ export default function DrawerMenu({ open, onClose }) {
                 {/* Menu items */}
                 <nav className="flex flex-col gap-1 p-4 flex-1">
                     <MenuItem
+                        icon={<Home size={20} />}
+                        label="Página Inicial"
+                        onClick={() => handleNavigate("/")}
+                    />
+                    <div className="border-t border-gray-200 my-2"></div>
+                    <MenuItem
                         icon={<UtensilsCrossed size={20} />}
                         label="Cardápio"
                         onClick={() => handleNavigate("/cardapio")}
+                    />
+                    <MenuItem
+                        icon={<CheckCircle size={20} />}
+                        label="Pedidos Concluídos"
+                        onClick={() => handleNavigate("/concluded")}
                     />
                 </nav>
 

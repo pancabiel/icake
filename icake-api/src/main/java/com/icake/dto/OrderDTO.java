@@ -11,6 +11,7 @@ public class OrderDTO {
     private String clientName;
     private String address;
     private LocalDateTime dateTime;
+    private String status;
     private List<OrderItemDTO> items;
 
     public OrderDTO(Order order) {
@@ -18,6 +19,7 @@ public class OrderDTO {
         this.clientName = order.getClient().getName();
         this.address = order.getAddress().toString();
         this.dateTime = order.getDateTime();
+        this.status = order.getStatus().name();
         this.items = order.getItems()
                 .stream()
                 .map(OrderItemDTO::new)
@@ -42,6 +44,10 @@ public class OrderDTO {
 
     public void setDateTime(LocalDateTime dateTime) {
         this.dateTime = dateTime;
+    }
+
+    public String getStatus() {
+        return status;
     }
 
     public List<OrderItemDTO> getItems() {

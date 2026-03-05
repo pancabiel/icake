@@ -8,7 +8,13 @@ export default function AddressSelect({ clientId, value, onChange, disabled, ref
 
   useEffect(() => {
     if (clientId) {
-      fetchAddressesByClientId(clientId).then(setAddresses);
+      fetchAddressesByClientId(clientId).then((data) => {
+        setAddresses(data);
+        const favorite = data.find((a) => a.favorite);
+        if (favorite) {
+          onChange({ id: favorite.id });
+        }
+      });
     } else {
       setAddresses([]);
     }
