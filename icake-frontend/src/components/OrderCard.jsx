@@ -75,33 +75,33 @@ export default function OrderCard({ date, name, address, items, onEdit, onConclu
 				)}
 
 				{/* Date & Client */}
-				<div className="flex items-center gap-1.5 text-gray-500">
-					<Clock size={14} />
-					<span>{date}</span>
+				<div className="flex items-center gap-1.5">
+					<Clock size={25} style={{ color: "var(--main-red, #dc2626)" }} />
+					<span className="text-black">{date}</span>
 				</div>
-				<div className="flex items-center gap-1.5 mt-1">
-					<User size={16} className="text-gray-400" />
-					<span className="font-bold text-base text-gray-800">{name}</span>
+				<div className="flex items-center gap-1.5 my-3">
+					<User size={25} style={{ color: "var(--main-red, #dc2626)" }} />
+					<span className="font-bold text-black">{name}</span>
 				</div>
 
 				{/* Divider */}
 				<div className="border-t border-gray-100 my-3" />
 
 				{/* Address */}
-				<div className="flex items-center gap-1.5 text-gray-600">
-					<MapPin size={15} style={{ color: "var(--main-red, #dc2626)" }} />
-					<span>{address}</span>
+				<div className="flex items-center gap-1.5">
+					<MapPin size={25} style={{ color: "var(--main-red, #dc2626)" }} />
+					<span className="text-black">{address}</span>
 				</div>
 
 				{/* Items as badges */}
 				{items && items.length > 0 && (
 					<div className="flex items-start gap-1.5 mt-2.5">
-						<CakeSlice size={15} className="mt-0.5 flex-shrink-0" style={{ color: "var(--main-red, #dc2626)" }} />
+						<CakeSlice size={25} className="mt-0.5 flex-shrink-0" style={{ color: "var(--main-red, #dc2626)" }} />
 						<div className="flex flex-wrap gap-1.5">
 							{items.map((item, idx) => (
 								<span
 									key={idx}
-									className="bg-red-50 text-red-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-red-100"
+									className="bg-red-50 text-red-700 text-[15px] font-bold px-2.5 py-0.5 rounded-full border border-red-100"
 								>
 									{item.quantity} {item.name}
 								</span>
