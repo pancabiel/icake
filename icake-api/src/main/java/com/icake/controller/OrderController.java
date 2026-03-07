@@ -37,9 +37,9 @@ public class OrderController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<Order> getById(@PathVariable Long id) {
+	public ResponseEntity<OrderDTO> getById(@PathVariable Long id) {
 		return orderService.findById(id)
-				.map(ResponseEntity::ok)
+				.map(o -> ResponseEntity.ok(new OrderDTO(o)))
 				.orElse(ResponseEntity.notFound().build());
 	}
 
@@ -50,12 +50,12 @@ public class OrderController {
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<Order> update(@PathVariable Long id, @RequestBody Order order) {
+	public ResponseEntity<OrderDTO> update(@PathVariable Long id, @RequestBody Order order) {
 		if (orderService.findById(id).isEmpty()) {
 			return ResponseEntity.notFound().build();
 		}
 		order.setId(id);
-		return ResponseEntity.ok(orderService.save(order));
+		return ResponseEntity.ok(new OrderDTO(orderService.save(order)));
 	}
 
 	@PatchMapping("/{id}/conclude")

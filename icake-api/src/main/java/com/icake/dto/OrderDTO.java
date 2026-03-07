@@ -9,7 +9,8 @@ import java.util.stream.Collectors;
 public class OrderDTO {
     private Long id;
     private String clientName;
-    private String address;
+    private ClientInfo client;
+    private AddressInfo address;
     private LocalDateTime dateTime;
     private String status;
     private List<OrderItemDTO> items;
@@ -17,7 +18,15 @@ public class OrderDTO {
     public OrderDTO(Order order) {
         this.id = order.getId();
         this.clientName = order.getClient().getName();
-        this.address = order.getAddress().toString();
+        this.client = new ClientInfo(order.getClient().getId(), order.getClient().getName());
+        this.address = new AddressInfo(
+                order.getAddress().getId(),
+                order.getAddress().getResume(),
+                order.getAddress().getStreet(),
+                order.getAddress().getNumber(),
+                order.getAddress().getComplement(),
+                order.getAddress().getZipCode()
+        );
         this.dateTime = order.getDateTime();
         this.status = order.getStatus().name();
         this.items = order.getItems()
@@ -34,7 +43,11 @@ public class OrderDTO {
         return clientName;
     }
 
-    public String getAddress() {
+    public ClientInfo getClient() {
+        return client;
+    }
+
+    public AddressInfo getAddress() {
         return address;
     }
 
@@ -52,5 +65,44 @@ public class OrderDTO {
 
     public List<OrderItemDTO> getItems() {
         return items;
+    }
+
+    // Nested DTOs for client and address
+    public static class ClientInfo {
+        private Long id;
+        private String name;
+
+        public ClientInfo(Long id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        public Long getId() { return id; }
+        public String getName() { return name; }
+    }
+
+    public static class AddressInfo {
+        private Long id;
+        private String resume;
+        private String street;
+        private String number;
+        private String complement;
+        private String zipCode;
+
+        public AddressInfo(Long id, String resume, String street, String number, String complement, String zipCode) {
+            this.id = id;
+            this.resume = resume;
+            this.street = street;
+            this.number = number;
+            this.complement = complement;
+            this.zipCode = zipCode;
+        }
+
+        public Long getId() { return id; }
+        public String getResume() { return resume; }
+        public String getStreet() { return street; }
+        public String getNumber() { return number; }
+        public String getComplement() { return complement; }
+        public String getZipCode() { return zipCode; }
     }
 }

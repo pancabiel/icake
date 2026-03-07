@@ -52,7 +52,7 @@ export default function ClientSelect({ clients, value, onChange }) {
           onChange={(e) => setQuery(e.target.value)}
           displayValue={(val) => {
             if (!val) return "";
-            if (val.type === "new") return val.name;
+            if (val.name) return val.name;
             return clients.find(c => c.id === val.id)?.name || "";
           }}
           autoComplete="off"

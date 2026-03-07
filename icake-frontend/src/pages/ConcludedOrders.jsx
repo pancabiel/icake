@@ -75,12 +75,13 @@ export default function ConcludedOrders() {
                                 year: "numeric",
                                 hour: "2-digit",
                                 minute: "2-digit"
-                            })}
+                            }).replace(", ", " - ")}
                             name={order.clientName}
-                            address={order.address}
-                            details={order.items
-                                .map((orderItem) => `${orderItem.quantity} ${orderItem.item.name}`)
-                                .join(", ")}
+                            address={order.address?.resume}
+                            items={order.items?.map((oi) => ({
+                                quantity: oi.quantity,
+                                name: oi.item.name
+                            }))}
                             onUnconclude={() => handleUnconclude(order.id)}
                         />
                     ))

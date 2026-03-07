@@ -22,8 +22,8 @@ public class RateLimitFilter implements WebFilter {
 	private Bucket createBucket() {
 		return Bucket.builder()
 				.addLimit(Bandwidth.builder()
-						.capacity(50)                    // 50 requests
-						.refillIntervally(50, Duration.ofMinutes(1)) // per minute
+						.capacity(200)                    // 200 requests
+						.refillGreedy(200, Duration.ofMinutes(1)) // gradual refill per minute
 						.build())
 				.build();
 	}

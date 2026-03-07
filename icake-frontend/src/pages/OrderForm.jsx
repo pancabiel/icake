@@ -117,11 +117,14 @@ export default function OrderForm() {
 		});
 	}, [isEditMode, orderId]);
 
+	// Reset address only when client changes in create mode
+	const watchedClient = form.watch("client");
+
 	useEffect(() => {
 		if (!isEditMode) {
 			form.setValue("address", null); // reset address whenever client changes (create mode only)
 		}
-	}, [form.watch("client")]);
+	}, [watchedClient]);
 
 	const { fields, append, remove } = useFieldArray({
 		control: form.control,

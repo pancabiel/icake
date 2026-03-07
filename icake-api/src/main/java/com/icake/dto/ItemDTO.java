@@ -4,16 +4,22 @@ import com.icake.model.Item;
 
 public class ItemDTO {
 
+    private Long id;
     private String name;
     private String picture;
     private String description;
     private double price;
 
     public ItemDTO(Item item) {
+        this.id = item.getId();
         this.name = item.getName();
         this.picture = item.getPicture();
         this.description = item.getDescription();
         this.price = item.getPrice();
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getName() {

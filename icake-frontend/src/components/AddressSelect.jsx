@@ -10,9 +10,12 @@ export default function AddressSelect({ clientId, value, onChange, disabled, ref
     if (clientId) {
       fetchAddressesByClientId(clientId).then((data) => {
         setAddresses(data);
-        const favorite = data.find((a) => a.favorite);
-        if (favorite) {
-          onChange({ id: favorite.id });
+        // Only auto-select favorite when no address is already set (avoids overwriting edit-mode data)
+        if (!value) {
+          const favorite = data.find((a) => a.favorite);
+          if (favorite) {
+            onChange({ id: favorite.id });
+          }
         }
       });
     } else {
