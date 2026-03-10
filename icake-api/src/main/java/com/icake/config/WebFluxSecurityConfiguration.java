@@ -24,6 +24,7 @@ public class WebFluxSecurityConfiguration {
 				.authorizeExchange(exchanges -> exchanges
 						.pathMatchers("/api/auth/**").permitAll()
 						.pathMatchers("/actuator/**").permitAll()
+						.pathMatchers("/api/catalog/**").permitAll()
 						.anyExchange().authenticated()
 				);
 

@@ -146,3 +146,99 @@ export const deleteItem = (id) => apiFetch(`${API_BASE_URL}/items/${id}`, {
 }).then(res => {
    if (!res.ok) throw new Error(`Failed to delete item: ${res.status}`);
 });
+
+// ── Catalog (public, no auth needed) ──────────────────────────────────────────
+
+export const fetchCatalog = () =>
+   fetch(`${API_BASE_URL}/catalog`).then(res => res.json());
+
+// ── Categories ────────────────────────────────────────────────────────────────
+
+export const fetchCategories = () =>
+   apiFetch(`${API_BASE_URL}/categories`).then(res => res.json());
+
+export const createCategory = (data) =>
+   apiFetch(`${API_BASE_URL}/categories`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+   }).then(res => {
+      if (!res.ok) throw new Error(`Failed to create category: ${res.status}`);
+      return res.json();
+   });
+
+export const updateCategory = (id, data) =>
+   apiFetch(`${API_BASE_URL}/categories/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+   }).then(res => {
+      if (!res.ok) throw new Error(`Failed to update category: ${res.status}`);
+      return res.json();
+   });
+
+export const deleteCategory = (id) =>
+   apiFetch(`${API_BASE_URL}/categories/${id}`, {
+      method: "DELETE",
+   }).then(res => {
+      if (!res.ok) throw new Error(`Failed to delete category: ${res.status}`);
+   });
+
+// ── Addons ────────────────────────────────────────────────────────────────────
+
+export const createAddon = (data) =>
+   apiFetch(`${API_BASE_URL}/addons`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+   }).then(res => {
+      if (!res.ok) throw new Error(`Failed to create addon: ${res.status}`);
+      return res.json();
+   });
+
+export const updateAddon = (id, data) =>
+   apiFetch(`${API_BASE_URL}/addons/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+   }).then(res => {
+      if (!res.ok) throw new Error(`Failed to update addon: ${res.status}`);
+      return res.json();
+   });
+
+export const deleteAddon = (id) =>
+   apiFetch(`${API_BASE_URL}/addons/${id}`, {
+      method: "DELETE",
+   }).then(res => {
+      if (!res.ok) throw new Error(`Failed to delete addon: ${res.status}`);
+   });
+
+// ── Addon Options ─────────────────────────────────────────────────────────────
+
+export const createAddonOption = (data) =>
+   apiFetch(`${API_BASE_URL}/addon-options`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+   }).then(res => {
+      if (!res.ok) throw new Error(`Failed to create addon option: ${res.status}`);
+      return res.json();
+   });
+
+export const updateAddonOption = (id, data) =>
+   apiFetch(`${API_BASE_URL}/addon-options/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+   }).then(res => {
+      if (!res.ok) throw new Error(`Failed to update addon option: ${res.status}`);
+      return res.json();
+   });
+
+export const deleteAddonOption = (id) =>
+   apiFetch(`${API_BASE_URL}/addon-options/${id}`, {
+      method: "DELETE",
+   }).then(res => {
+      if (!res.ok) throw new Error(`Failed to delete addon option: ${res.status}`);
+   });
+// ───────────────────────────────────────────────────────────────

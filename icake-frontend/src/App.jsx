@@ -7,7 +7,7 @@ import ConcludedOrders from "./pages/ConcludedOrders";
 import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
 import Shopping from "./pages/Shoppping";
 import Profile from "./pages/Profile";
-import ItemsManager from "./pages/ItemsManager";
+import ItemsManager from "./pages/CatalogManager";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ToastContainer } from "react-toastify";
