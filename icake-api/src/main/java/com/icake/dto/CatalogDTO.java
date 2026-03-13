@@ -26,13 +26,14 @@ public class CatalogDTO {
         Long id,
         String name,
         String emoji,
+        int sortOrder,
         List<ItemDTO> products
     ) {
         public static CategoryDTO from(Category c) {
             List<ItemDTO> products = c.getItems() == null
                 ? List.of()
-                : c.getItems().stream().filter(Item::isActive).map(ItemDTO::from).toList();
-            return new CategoryDTO(c.getId(), c.getName(), c.getEmoji(), products);
+                : c.getItems().stream().filter(Item::isActive).distinct().map(ItemDTO::from).toList();
+            return new CategoryDTO(c.getId(), c.getName(), c.getEmoji(), c.getSortOrder(), products);
         }
     }
 
@@ -52,7 +53,7 @@ public class CatalogDTO {
         public static ItemDTO from(Item i) {
             List<AddonDTO> addons = i.getAddons() == null
                 ? List.of()
-                : i.getAddons().stream().map(AddonDTO::from).toList();
+                : i.getAddons().stream().distinct().map(AddonDTO::from).toList();
             return new ItemDTO(
                 i.getId(), i.getName(), i.getDescription(),
                 i.getEmoji(), i.getPicture(), i.getPrice(),

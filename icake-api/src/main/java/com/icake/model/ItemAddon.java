@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 
 @Entity
@@ -40,6 +41,7 @@ public class ItemAddon extends BaseEntity {
 	private Integer maxSelections;
 
 	@OneToMany(mappedBy = "addon", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OrderBy("id ASC")
 	private Set<ItemAddonOption> options;
 
 	public Item getItem() {

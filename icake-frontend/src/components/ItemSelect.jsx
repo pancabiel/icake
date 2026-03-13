@@ -1,7 +1,7 @@
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
 import { useState } from "react";
 
-export default function ItemSelect({ items, value, onChange }) {
+export default function ItemSelect({ items, value, onChange, displayName }) {
   const [query, setQuery] = useState("");
 
   const filteredItems =
@@ -18,7 +18,7 @@ export default function ItemSelect({ items, value, onChange }) {
           placeholder="Selecione ou digite um item"
           className="w-full border p-2 rounded"
           onChange={(e) => setQuery(e.target.value)}
-          displayValue={(id) => items.find(i => i.id === id)?.name || ""}
+          displayValue={(id) => items.find(i => i.id === id)?.name || displayName || ""}
           autoComplete="off"
         />
         <ComboboxOptions className="absolute w-full mt-1 border rounded bg-white z-10 max-h-40 overflow-auto">

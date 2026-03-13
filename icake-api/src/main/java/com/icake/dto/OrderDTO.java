@@ -31,6 +31,7 @@ public class OrderDTO {
         this.status = order.getStatus().name();
         this.items = order.getItems()
                 .stream()
+                .distinct()
                 .map(OrderItemDTO::new)
                 .collect(Collectors.toList());
     }

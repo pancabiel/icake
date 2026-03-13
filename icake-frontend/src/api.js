@@ -102,11 +102,7 @@ export async function createOrder(values) {
          client,
          address,
          dateTime: values.dateTime,
-         items: values.items.map(item => ({
-            item: { id: item.productId },
-            quantity: item.quantity,
-            note: item.note
-         }))
+         items: values.items,
       }),
    });
 
@@ -241,4 +237,10 @@ export const deleteAddonOption = (id) =>
    }).then(res => {
       if (!res.ok) throw new Error(`Failed to delete addon option: ${res.status}`);
    });
+
+// ── Item Addons ───────────────────────────────────────────────────────────────
+
+export async function fetchItemAddons(itemId) {
+   return apiFetch(`${API_BASE_URL}/items/${itemId}/addons`).then(res => res.json());
+}
 // ───────────────────────────────────────────────────────────────

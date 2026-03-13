@@ -19,6 +19,8 @@ export default function AddressModal({ open, onClose, onSave, isNewClient }) {
     const complementInputRef = useRef(null);
     const lastFetchedCepRef = useRef(null);
 
+    let citiesCache = null;
+
     const form = useForm({
         defaultValues: {
             zipCode: "",
@@ -29,11 +31,16 @@ export default function AddressModal({ open, onClose, onSave, isNewClient }) {
         }
     });
 
+
     useEffect(() => {
-        // Fetch cities on mount
+        if (citiesCache) {
+            setCities(citiesCache);
+            return;
+        }
         fetchCities()
             .then(data => {
                 if (Array.isArray(data)) {
+                    citiesCache = data;
                     setCities(data);
                 }
             })

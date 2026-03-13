@@ -12,10 +12,12 @@ import com.icake.model.Address;
 import com.icake.model.Client;
 import com.icake.model.ClientAddress;
 import com.icake.model.Order;
+import com.icake.model.OrderItemAddonSelection;
 import com.icake.model.OrderStatus;
 import com.icake.repository.AddressRepository;
 import com.icake.repository.ClientAddressRepository;
 import com.icake.repository.ClientRepository;
+import com.icake.repository.ItemAddonOptionRepository;
 import com.icake.repository.ItemRepository;
 import com.icake.repository.OrderRepository;
 
@@ -26,17 +28,20 @@ public class OrderService {
 	private final AddressRepository addressRepository;
 	private final ItemRepository itemRepository;
 	private final ClientAddressRepository clientAddressRepository;
+	private final ItemAddonOptionRepository itemAddonOptionRepository;
 
 	public OrderService(OrderRepository orderRepository,
 	                    ClientRepository clientRepository,
 	                    AddressRepository addressRepository,
 	                    ItemRepository itemRepository,
-	                    ClientAddressRepository clientAddressRepository) {
+	                    ClientAddressRepository clientAddressRepository,
+	                    ItemAddonOptionRepository itemAddonOptionRepository) {
 		this.orderRepository = orderRepository;
 		this.clientRepository = clientRepository;
 		this.addressRepository = addressRepository;
 		this.itemRepository = itemRepository;
 		this.clientAddressRepository = clientAddressRepository;
+		this.itemAddonOptionRepository = itemAddonOptionRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -113,11 +118,22 @@ public class OrderService {
 			markAddressAsFavorite(order.getClient(), address);
 		}
 
-		// Ensure each OrderItem points to the Order and has managed Item references
+		// Ensure each OrderItem points to the Order and has managed Item/Addon references
 		if (order.getItems() != null) {
 			order.getItems().forEach(oi -> {
 				oi.setOrder(order);
 				oi.setItem(itemRepository.getReferenceById(oi.getItem().getId()));
+
+				// Build addon selections from the transient addonOptionIds list
+				oi.getAddonSelections().clear();
+				if (oi.getAddonOptionIds() != null) {
+					for (Long optionId : oi.getAddonOptionIds()) {
+						OrderItemAddonSelection sel = new OrderItemAddonSelection();
+						sel.setOrderItem(oi);
+						sel.setAddonOption(itemAddonOptionRepository.getReferenceById(optionId));
+						oi.getAddonSelections().add(sel);
+					}
+				}
 			});
 		}
 

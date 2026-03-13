@@ -1,6 +1,3 @@
--- V2__catalog_addons.sql
--- Run this if you're using Flyway. Otherwise execute manually.
-
 -- 1. Categories
 CREATE TABLE categories (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -50,4 +47,4 @@ CREATE TABLE item_addon_options (
 INSERT INTO categories (name, emoji, sort_order, active) VALUES
     ('Bolos',        '🎂', 1, TRUE),
     ('Brigadeiros',  '🍫', 2, TRUE),
-    ('Tortas',       '🥧', 3, TRUE);
+    ('Salgados',     '🥧', 3, TRUE);

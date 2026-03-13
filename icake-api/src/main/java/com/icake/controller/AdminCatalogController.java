@@ -203,4 +203,12 @@ public class AdminCatalogController {
         if (body.get("priceDelta") != null) option.setPriceDelta(((Number) body.get("priceDelta")).doubleValue());
         if (body.get("active") != null) option.setActive((Boolean) body.get("active"));
     }
+
+    // ── Item Addons ───────────────────────────────────────────────────────────────
+
+    @GetMapping("/items/{id}/addons")
+    public ResponseEntity<List<ItemAddon>> getItemAddons(@PathVariable Long id) {
+        if (!itemRepository.existsById(id)) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(addonRepository.findByItemId(id));
+    }
 }

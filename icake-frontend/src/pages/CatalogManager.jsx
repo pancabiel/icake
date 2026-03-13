@@ -29,7 +29,16 @@ export default function CatalogManager() {
     function load() {
         setLoading(true);
         fetchCatalog()
-            .then(data => setCategories(data.categories ?? data))
+            .then(data => {
+                const cats = data.categories ?? data;
+                setCategories(cats.map(cat => ({
+                    ...cat,
+                    items: (cat.products ?? cat.items ?? []).map(p => ({
+                        ...p,
+                        price: p.basePrice ?? p.price,
+                    })),
+                })));
+            })
             .catch(() => setError("Erro ao carregar cardápio."))
             .finally(() => setLoading(false));
     }
