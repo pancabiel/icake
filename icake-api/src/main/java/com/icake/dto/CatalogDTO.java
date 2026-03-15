@@ -1,6 +1,8 @@
 package com.icake.dto;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.icake.model.AddonType;
 import com.icake.model.Category;
@@ -70,6 +72,7 @@ public class CatalogDTO {
         AddonType type,
         boolean required,
         Integer maxSelections,
+        int sortOrder,
         List<AddonOptionDTO> options
     ) {
         public static AddonDTO from(ItemAddon a) {
@@ -80,7 +83,7 @@ public class CatalogDTO {
                     .map(AddonOptionDTO::from).toList();
             return new AddonDTO(
                 a.getId(), a.getLabel(), a.getType(),
-                a.isRequired(), a.getMaxSelections(), options
+                a.isRequired(), a.getMaxSelections(), a.getSortOrder(), options
             );
         }
     }
@@ -90,10 +93,17 @@ public class CatalogDTO {
     public record AddonOptionDTO(
         Long id,
         String label,
-        double priceDelta
+        double priceDelta,
+        Map<Long, Double> sizePrices
     ) {
         public static AddonOptionDTO from(ItemAddonOption o) {
-            return new AddonOptionDTO(o.getId(), o.getLabel(), o.getPriceDelta());
+            Map<Long, Double> prices = o.getSizePrices() == null || o.getSizePrices().isEmpty()
+                ? Map.of()
+                : o.getSizePrices().stream().collect(Collectors.toMap(
+                    sp -> sp.getSizeOption().getId(),
+                    sp -> sp.getPriceDelta()
+                ));
+            return new AddonOptionDTO(o.getId(), o.getLabel(), o.getPriceDelta(), prices);
         }
     }
 }

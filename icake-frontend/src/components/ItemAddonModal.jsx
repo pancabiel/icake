@@ -8,7 +8,22 @@ function formatPrice(value) {
     return Number(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+// Returns the effective priceDelta for an option given the selected size option id
+function effectivePrice(opt, selectedSizeOptionId) {
+    if (selectedSizeOptionId != null && opt.sizePrices) {
+        const override = opt.sizePrices[selectedSizeOptionId];
+        if (override !== undefined) return override;
+    }
+    return opt.priceDelta;
+}
+
+function getSelectedSizeOptionId(addons, selections) {
+    const sizeAddon = addons.find(a => a.type === "SIZE");
+    return sizeAddon ? (selections[sizeAddon.id] ?? null) : null;
+}
+
 function calcExtraPrice(addons, selections) {
+    const selectedSizeOptionId = getSelectedSizeOptionId(addons, selections);
     let extra = 0;
     for (const addon of addons) {
         const sel = selections[addon.id];
@@ -16,7 +31,7 @@ function calcExtraPrice(addons, selections) {
         const ids = Array.isArray(sel) ? sel : [sel];
         for (const optId of ids) {
             const opt = addon.options.find(o => o.id === optId);
-            if (opt) extra += opt.priceDelta;
+            if (opt) extra += effectivePrice(opt, selectedSizeOptionId);
         }
     }
     return extra;
@@ -24,7 +39,7 @@ function calcExtraPrice(addons, selections) {
 
 function isValid(addons, selections) {
     return addons
-        .filter(a => a.required)
+        .filter(a => a.required || a.type === "SIZE")
         .every(a => {
             const sel = selections[a.id];
             return sel && (Array.isArray(sel) ? sel.length > 0 : true);
@@ -60,7 +75,7 @@ export default function ItemAddonModal({ item, initialAddonOptionIds, initialNot
                 if (initialAddonOptionIds?.length > 0) {
                     const rebuilt = {};
                     for (const addon of fetchedAddons) {
-                        if (addon.type === "SINGLE") {
+                        if (addon.type === "SINGLE" || addon.type === "SIZE") {
                             const match = addon.options.find(o => initialAddonOptionIds.includes(o.id));
                             if (match) rebuilt[addon.id] = match.id;
                         } else {
@@ -81,7 +96,7 @@ export default function ItemAddonModal({ item, initialAddonOptionIds, initialNot
 
     function toggle(addonId, optId, type, max) {
         setSelections(prev => {
-            if (type === "SINGLE") return { ...prev, [addonId]: optId };
+            if (type === "SINGLE" || type === "SIZE") return { ...prev, [addonId]: optId };
             const cur = prev[addonId] || [];
             if (cur.includes(optId)) return { ...prev, [addonId]: cur.filter(x => x !== optId) };
             if (max && cur.length >= max) return prev;
@@ -92,11 +107,12 @@ export default function ItemAddonModal({ item, initialAddonOptionIds, initialNot
     function handleConfirm() {
         // Flatten all selected option IDs into a plain array
         const addonOptionIds = Object.values(selections).flat();
-        onConfirm({ selections, addonOptionIds, note });
+        onConfirm({ selections, addonOptionIds, note, extraPrice });
         close();
     }
 
     const extraPrice = calcExtraPrice(addons, selections);
+    const selectedSizeOptionId = getSelectedSizeOptionId(addons, selections);
     const totalPrice = (item.price + extraPrice) * 1; // qty handled outside
     const canConfirm = !loading && isValid(addons, selections);
 
@@ -171,24 +187,26 @@ export default function ItemAddonModal({ item, initialAddonOptionIds, initialNot
                                 </p>
                                 <span style={{
                                     fontSize: "0.7rem", padding: "2px 8px", borderRadius: 99,
-                                    background: addon.required ? "#fee2e2" : "#f3f4f6",
-                                    color: addon.required ? "var(--main-red)" : "#6b7280",
+                                    background: (addon.required || addon.type === "SIZE") ? "#fee2e2" : "#f3f4f6",
+                                    color: (addon.required || addon.type === "SIZE") ? "var(--main-red)" : "#6b7280",
                                 }}>
                                     {addon.type === "MULTI"
                                         ? (addon.maxSelections ? `até ${addon.maxSelections}` : "múltiplos")
                                         : "escolha 1"
                                     }
-                                    {addon.required ? " · obrigatório" : " · opcional"}
+                                    {(addon.required || addon.type === "SIZE") ? " · obrigatório" : " · opcional"}
                                 </span>
                             </div>
 
                             {/* Options */}
                             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                {addon.options.filter(o => o.active).map(opt => {
+                                {addon.options.map(opt => {
                                     const sel = selections[addon.id];
-                                    const active = addon.type === "SINGLE"
+                                    const isRadio = addon.type === "SINGLE" || addon.type === "SIZE";
+                                    const active = isRadio
                                         ? sel === opt.id
                                         : (sel || []).includes(opt.id);
+                                    const price = effectivePrice(opt, addon.type !== "SIZE" ? selectedSizeOptionId : null);
 
                                     return (
                                         <button
@@ -206,7 +224,7 @@ export default function ItemAddonModal({ item, initialAddonOptionIds, initialNot
                                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                                 <div style={{
                                                     width: 18, height: 18,
-                                                    borderRadius: addon.type === "SINGLE" ? "50%" : 4,
+                                                    borderRadius: "50%",
                                                     border: `2px solid ${active ? "var(--main-red)" : "#d1d5db"}`,
                                                     background: active ? "var(--main-red)" : "transparent",
                                                     flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
@@ -215,9 +233,9 @@ export default function ItemAddonModal({ item, initialAddonOptionIds, initialNot
                                                 </div>
                                                 <span style={{ fontSize: "0.88rem", color: "#111" }}>{opt.label}</span>
                                             </div>
-                                            {opt.priceDelta !== 0 && (
-                                                <span style={{ fontSize: "0.82rem", fontWeight: 600, color: opt.priceDelta > 0 ? "#374151" : "var(--main-red)", flexShrink: 0, marginLeft: 8 }}>
-                                                    {opt.priceDelta > 0 ? `+${formatPrice(opt.priceDelta)}` : `-${formatPrice(Math.abs(opt.priceDelta))}`}
+                                            {price !== 0 && (
+                                                <span style={{ fontSize: "0.82rem", fontWeight: 600, color: price > 0 ? "#374151" : "var(--main-red)", flexShrink: 0, marginLeft: 8 }}>
+                                                    {price > 0 ? `+${formatPrice(price)}` : `-${formatPrice(Math.abs(price))}`}
                                                 </span>
                                             )}
                                         </button>

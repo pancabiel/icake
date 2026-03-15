@@ -1,8 +1,12 @@
 package com.icake.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "item_addon_options")
@@ -22,6 +26,11 @@ public class ItemAddonOption extends BaseEntity {
 	private double priceDelta = 0.0;
 
 	private boolean active = true;
+
+	@JsonIgnore
+	@BatchSize(size = 50)
+	@OneToMany(mappedBy = "option", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<ItemAddonOptionSizePrice> sizePrices = new HashSet<>();
 
 	public ItemAddon getAddon() {
 		return addon;
@@ -53,5 +62,13 @@ public class ItemAddonOption extends BaseEntity {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	public Set<ItemAddonOptionSizePrice> getSizePrices() {
+		return sizePrices;
+	}
+
+	public void setSizePrices(Set<ItemAddonOptionSizePrice> sizePrices) {
+		this.sizePrices = sizePrices;
 	}
 }

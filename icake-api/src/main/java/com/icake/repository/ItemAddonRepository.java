@@ -11,6 +11,6 @@ import com.icake.model.ItemAddon;
 @Repository
 public interface ItemAddonRepository extends JpaRepository<ItemAddon, Long> {
 
-    @Query("SELECT DISTINCT a FROM ItemAddon a LEFT JOIN FETCH a.options AS opt WHERE a.item.id = :itemId")
+    @Query("SELECT DISTINCT a FROM ItemAddon a LEFT JOIN FETCH a.options AS opt WHERE a.item.id = :itemId ORDER BY a.sortOrder ASC")
     List<ItemAddon> findByItemId(Long itemId);
 }

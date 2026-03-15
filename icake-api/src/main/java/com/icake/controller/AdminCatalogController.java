@@ -18,6 +18,7 @@ import com.icake.model.Category;
 import com.icake.model.Item;
 import com.icake.model.ItemAddon;
 import com.icake.model.ItemAddonOption;
+import com.icake.model.ItemAddonOptionSizePrice;
 import com.icake.repository.CategoryRepository;
 import com.icake.repository.ItemAddonOptionRepository;
 import com.icake.repository.ItemAddonRepository;
@@ -163,6 +164,7 @@ public class AdminCatalogController {
         if (body.get("label") != null) addon.setLabel((String) body.get("label"));
         if (body.get("type") != null) addon.setType(AddonType.valueOf((String) body.get("type")));
         if (body.get("required") != null) addon.setRequired((Boolean) body.get("required"));
+        if (body.get("sortOrder") != null) addon.setSortOrder(((Number) body.get("sortOrder")).intValue());
         if (body.containsKey("maxSelections")) {
             addon.setMaxSelections(body.get("maxSelections") != null
                     ? ((Number) body.get("maxSelections")).intValue()
@@ -173,6 +175,7 @@ public class AdminCatalogController {
     // ─── Addon Options ────────────────────────────────────────────────────────
 
     @PostMapping("/addon-options")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<ItemAddonOption> createOption(@RequestBody Map<String, Object> body) {
         Long addonId = ((Number) body.get("addonId")).longValue();
         return addonRepository.findById(addonId).map(addon -> {
@@ -184,8 +187,15 @@ public class AdminCatalogController {
     }
 
     @PutMapping("/addon-options/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<ItemAddonOption> updateOption(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         return optionRepository.findById(id).map(option -> {
+            option.getSizePrices().size(); // init lazy collection before clearing
+            if (body.containsKey("sizePrices")) {
+                // Flush the DELETE before INSERT to avoid unique constraint violation
+                option.getSizePrices().clear();
+                optionRepository.saveAndFlush(option);
+            }
             applyOption(option, body);
             return ResponseEntity.ok(optionRepository.save(option));
         }).orElse(ResponseEntity.notFound().build());
@@ -198,17 +208,39 @@ public class AdminCatalogController {
         return ResponseEntity.noContent().build();
     }
 
+    @SuppressWarnings("unchecked")
     private void applyOption(ItemAddonOption option, Map<String, Object> body) {
         if (body.get("label") != null) option.setLabel((String) body.get("label"));
         if (body.get("priceDelta") != null) option.setPriceDelta(((Number) body.get("priceDelta")).doubleValue());
         if (body.get("active") != null) option.setActive((Boolean) body.get("active"));
+        if (body.containsKey("sizePrices")) {
+            List<Map<String, Object>> sizePricesData = (List<Map<String, Object>>) body.get("sizePrices");
+            if (sizePricesData != null) {
+                for (Map<String, Object> spData : sizePricesData) {
+                    Long sizeOptionId = ((Number) spData.get("sizeOptionId")).longValue();
+                    double priceDelta = ((Number) spData.get("priceDelta")).doubleValue();
+                    optionRepository.findById(sizeOptionId).ifPresent(sizeOpt -> {
+                        ItemAddonOptionSizePrice sp = new ItemAddonOptionSizePrice();
+                        sp.setOption(option);
+                        sp.setSizeOption(sizeOpt);
+                        sp.setPriceDelta(priceDelta);
+                        option.getSizePrices().add(sp);
+                    });
+                }
+            }
+        }
     }
 
     // ── Item Addons ───────────────────────────────────────────────────────────────
 
     @GetMapping("/items/{id}/addons")
-    public ResponseEntity<List<ItemAddon>> getItemAddons(@PathVariable Long id) {
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public ResponseEntity<List<com.icake.dto.CatalogDTO.AddonDTO>> getItemAddons(@PathVariable Long id) {
         if (!itemRepository.existsById(id)) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(addonRepository.findByItemId(id));
+        return ResponseEntity.ok(
+            addonRepository.findByItemId(id).stream()
+                .map(com.icake.dto.CatalogDTO.AddonDTO::from)
+                .toList()
+        );
     }
 }

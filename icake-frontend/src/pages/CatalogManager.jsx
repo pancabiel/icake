@@ -347,7 +347,16 @@ function ItemFormModal({ item, categoryId, categories, onClose, onSaved }) {
         active: item?.active ?? true,
         categoryId: item?.categoryId ?? categoryId,
     });
-    const [addons, setAddons] = useState(item?.addons ?? []);
+    // Normalize addons from API: ensure options have sizePrices as plain object with string keys
+    const [addons, setAddons] = useState(() =>
+        (item?.addons ?? []).map(a => ({
+            ...a,
+            options: (a.options ?? []).map(o => ({
+                ...o,
+                sizePrices: o.sizePrices ?? {},
+            })),
+        }))
+    );
     const [saving, setSaving] = useState(false);
     const [errors, setErrors] = useState({});
 
@@ -472,8 +481,8 @@ function ItemFormModal({ item, categoryId, categories, onClose, onSaved }) {
                                 </p>
                                 <button type="button"
                                     onClick={() => setAddons(prev => [...prev, {
-                                        _tempId: Date.now(), label: "", type: "SINGLE",
-                                        required: false, maxSelections: null, options: []
+                                        _tempId: String(Date.now()), label: "", type: "SINGLE",
+                                        required: false, maxSelections: null, sortOrder: prev.length, options: []
                                     }])}
                                     className="flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-lg"
                                     style={{ background: "var(--main-red)", color: "white" }}>
@@ -488,16 +497,22 @@ function ItemFormModal({ item, categoryId, categories, onClose, onSaved }) {
                             )}
 
                             <div className="flex flex-col gap-3">
-                                {addons.map((addon, addonIdx) => (
-                                    <AddonEditor
-                                        key={addon.id ?? addon._tempId}
-                                        addon={addon}
-                                        onChange={updated => setAddons(prev =>
-                                            prev.map((a, i) => i === addonIdx ? updated : a)
-                                        )}
-                                        onRemove={() => setAddons(prev => prev.filter((_, i) => i !== addonIdx))}
-                                    />
-                                ))}
+                                {addons.map((addon, addonIdx) => {
+                                    const sizeOptions = addons
+                                        .filter(a => a.type === "SIZE" && (a.id ?? a._tempId) !== (addon.id ?? addon._tempId))
+                                        .flatMap(a => a.options ?? []);
+                                    return (
+                                        <AddonEditor
+                                            key={addon.id ?? addon._tempId}
+                                            addon={addon}
+                                            sizeOptions={sizeOptions}
+                                            onChange={updated => setAddons(prev =>
+                                                prev.map((a, i) => i === addonIdx ? updated : a)
+                                            )}
+                                            onRemove={() => setAddons(prev => prev.filter((_, i) => i !== addonIdx))}
+                                        />
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -515,11 +530,14 @@ function ItemFormModal({ item, categoryId, categories, onClose, onSaved }) {
 
 // ─── Addon Editor ─────────────────────────────────────────────────────────────
 
-function AddonEditor({ addon, onChange, onRemove }) {
+// Returns a stable string key for a size option (real id or temp id)
+function sizeOptKey(opt) { return String(opt.id ?? opt._tempId); }
+
+function AddonEditor({ addon, sizeOptions, onChange, onRemove }) {
     function set(key, val) { onChange({ ...addon, [key]: val }); }
 
     function addOption() {
-        onChange({ ...addon, options: [...(addon.options ?? []), { _tempId: Date.now(), label: "", priceDelta: 0 }] });
+        onChange({ ...addon, options: [...(addon.options ?? []), { _tempId: String(Date.now()), label: "", priceDelta: 0, sizePrices: {} }] });
     }
 
     function updateOption(idx, updated) {
@@ -529,6 +547,10 @@ function AddonEditor({ addon, onChange, onRemove }) {
     function removeOption(idx) {
         onChange({ ...addon, options: addon.options.filter((_, i) => i !== idx) });
     }
+
+    const isSizeAddon = addon.type === "SIZE";
+    // Only show per-size price inputs when this is NOT a SIZE addon and there are size options defined
+    const showSizePrices = !isSizeAddon && sizeOptions.length > 0;
 
     return (
         <div className="border rounded-2xl overflow-hidden" style={{ borderColor: "#e5e7eb" }}>
@@ -545,20 +567,29 @@ function AddonEditor({ addon, onChange, onRemove }) {
                     className="text-xs border rounded-lg px-2 py-1 bg-white outline-none flex-shrink-0">
                     <option value="SINGLE">1 opção</option>
                     <option value="MULTI">Múltiplos</option>
+                    <option value="SIZE">Tamanho</option>
                 </select>
                 {addon.type === "MULTI" && (
                     <input type="number" value={addon.maxSelections ?? ""} min={1} placeholder="máx"
                         onChange={e => set("maxSelections", e.target.value ? Number(e.target.value) : null)}
                         className="w-12 text-xs border rounded-lg px-1 py-1 text-center outline-none flex-shrink-0" />
                 )}
-                <button type="button" onClick={() => set("required", !addon.required)}
-                    className="text-xs px-2 py-1 rounded-lg font-semibold flex-shrink-0 transition-colors"
-                    style={{
-                        background: addon.required ? "var(--main-red)" : "#f3f4f6",
-                        color: addon.required ? "white" : "#6b7280"
-                    }}>
-                    {addon.required ? "Obrig." : "Opcional"}
-                </button>
+                <input
+                    type="number" value={addon.sortOrder ?? 0} min={0}
+                    onChange={e => set("sortOrder", Number(e.target.value))}
+                    title="Ordem de exibição"
+                    className="w-10 text-xs border rounded-lg px-1 py-1 text-center outline-none flex-shrink-0"
+                />
+                {!isSizeAddon && (
+                    <button type="button" onClick={() => set("required", !addon.required)}
+                        className="text-xs px-2 py-1 rounded-lg font-semibold flex-shrink-0 transition-colors"
+                        style={{
+                            background: addon.required ? "var(--main-red)" : "#f3f4f6",
+                            color: addon.required ? "white" : "#6b7280"
+                        }}>
+                        {addon.required ? "Obrig." : "Opcional"}
+                    </button>
+                )}
                 <button type="button" onClick={onRemove}
                     className="p-1 rounded-lg hover:bg-red-50 flex-shrink-0">
                     <X size={14} style={{ color: "var(--main-red)" }} />
@@ -566,20 +597,56 @@ function AddonEditor({ addon, onChange, onRemove }) {
             </div>
 
             {/* Options */}
-            <div className="px-3 pb-2 pt-2 flex flex-col gap-1.5">
+            <div className="px-3 pb-2 pt-2 flex flex-col gap-2">
                 {(addon.options ?? []).map((opt, i) => (
-                    <div key={opt.id ?? opt._tempId} className="flex items-center gap-2">
-                        <input type="text" value={opt.label} placeholder="Nome da opção"
-                            onChange={e => updateOption(i, { ...opt, label: e.target.value })}
-                            className="flex-1 border rounded-xl px-3 py-1.5 text-sm outline-none min-w-0" />
-                        <span className="text-xs text-gray-400 flex-shrink-0">+R$</span>
-                        <input type="number" value={opt.priceDelta} step="0.01"
-                            onChange={e => updateOption(i, { ...opt, priceDelta: parseFloat(e.target.value) || 0 })}
-                            className="w-16 border rounded-xl px-2 py-1.5 text-sm outline-none text-center flex-shrink-0" />
-                        <button type="button" onClick={() => removeOption(i)}
-                            className="p-1 rounded-lg hover:bg-red-50 flex-shrink-0">
-                            <X size={13} style={{ color: "var(--main-red)" }} />
-                        </button>
+                    <div key={opt.id ?? opt._tempId} className="flex flex-col gap-1">
+                        {/* Main option row */}
+                        <div className="flex items-center gap-2">
+                            <input type="text" value={opt.label} placeholder="Nome da opção"
+                                onChange={e => updateOption(i, { ...opt, label: e.target.value })}
+                                className="flex-1 border rounded-xl px-3 py-1.5 text-sm outline-none min-w-0" />
+                            <span className="text-xs text-gray-400 flex-shrink-0">
+                                {showSizePrices ? "padrão R$" : "+R$"}
+                            </span>
+                            <input type="number" value={opt.priceDelta} step="0.01"
+                                onChange={e => updateOption(i, { ...opt, priceDelta: parseFloat(e.target.value) || 0 })}
+                                className="w-16 border rounded-xl px-2 py-1.5 text-sm outline-none text-center flex-shrink-0" />
+                            <button type="button" onClick={() => removeOption(i)}
+                                className="p-1 rounded-lg hover:bg-red-50 flex-shrink-0">
+                                <X size={13} style={{ color: "var(--main-red)" }} />
+                            </button>
+                        </div>
+                        {/* Per-size price overrides */}
+                        {showSizePrices && (
+                            <div className="flex flex-col gap-1 pl-3 border-l-2 ml-2" style={{ borderColor: "#e5e7eb" }}>
+                                {sizeOptions.map(sizeOpt => {
+                                    const key = sizeOptKey(sizeOpt);
+                                    const val = opt.sizePrices?.[key] ?? "";
+                                    return (
+                                        <div key={key} className="flex items-center gap-2">
+                                            <span className="text-xs text-gray-500 flex-1 min-w-0 truncate text-right">{sizeOpt.label || "Tamanho"}</span>
+                                            <span className="text-xs text-gray-400 flex-shrink-0">+R$</span>
+                                            <input
+                                                type="number" step="0.01"
+                                                value={val}
+                                                placeholder={String(opt.priceDelta)}
+                                                onChange={e => {
+                                                    const newSizePrices = { ...(opt.sizePrices ?? {}) };
+                                                    if (e.target.value === "") {
+                                                        delete newSizePrices[key];
+                                                    } else {
+                                                        newSizePrices[key] = parseFloat(e.target.value) || 0;
+                                                    }
+                                                    updateOption(i, { ...opt, sizePrices: newSizePrices });
+                                                }}
+                                                className="w-16 border rounded-xl px-2 py-1 text-sm outline-none text-center flex-shrink-0"
+                                                style={{ borderColor: "#e5e7eb" }}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 ))}
                 <button type="button" onClick={addOption}
@@ -688,7 +755,6 @@ function formatPrice(value) {
 // Handles create/update/delete of addons and their options against the API
 
 async function syncAddons(itemId, newAddons, oldAddons) {
-    const oldIds = new Set(oldAddons.map(a => a.id));
     const newIds = new Set(newAddons.filter(a => a.id).map(a => a.id));
 
     // Delete removed addons
@@ -696,27 +762,28 @@ async function syncAddons(itemId, newAddons, oldAddons) {
         if (!newIds.has(old.id)) await deleteAddon(old.id);
     }
 
-    const result = [];
-    for (const addon of newAddons) {
+    // Save SIZE addons first so we have real IDs for size options before saving other addons
+    const sizeAddons = newAddons.filter(a => a.type === "SIZE");
+    const otherAddons = newAddons.filter(a => a.type !== "SIZE");
+
+    // Map from local key (String(id) or _tempId) → saved real id
+    const sizeOptionKeyToId = {};
+
+    async function saveAddonAndOptions(addon, buildSizePrices) {
         const payload = {
             itemId,
             label: addon.label,
             type: addon.type,
-            required: addon.required,
+            required: addon.required ?? false,
             maxSelections: addon.maxSelections ?? null,
+            sortOrder: addon.sortOrder ?? 0,
         };
+        const savedAddon = addon.id
+            ? await updateAddon(addon.id, payload)
+            : await createAddon(payload);
 
-        let savedAddon;
-        if (addon.id) {
-            savedAddon = await updateAddon(addon.id, payload);
-        } else {
-            savedAddon = await createAddon(payload);
-        }
-
-        // Sync options
         const oldOptions = (oldAddons.find(a => a.id === addon.id)?.options) ?? [];
         const newOptions = addon.options ?? [];
-        const oldOptIds = new Set(oldOptions.map(o => o.id));
         const newOptIds = new Set(newOptions.filter(o => o.id).map(o => o.id));
 
         for (const old of oldOptions) {
@@ -725,16 +792,48 @@ async function syncAddons(itemId, newAddons, oldAddons) {
 
         const savedOptions = [];
         for (const opt of newOptions) {
-            const optPayload = { addonId: savedAddon.id, label: opt.label, priceDelta: opt.priceDelta ?? 0 };
-            if (opt.id) {
-                savedOptions.push(await updateAddonOption(opt.id, optPayload));
-            } else {
-                savedOptions.push(await createAddonOption(optPayload));
+            const sizePricesPayload = buildSizePrices
+                ? Object.entries(opt.sizePrices ?? {})
+                    .filter(([, delta]) => delta !== "" && delta !== undefined)
+                    .map(([key, delta]) => ({
+                        sizeOptionId: sizeOptionKeyToId[key] ?? Number(key),
+                        priceDelta: Number(delta),
+                    }))
+                : undefined;
+
+            const optPayload = {
+                addonId: savedAddon.id,
+                label: opt.label,
+                priceDelta: opt.priceDelta ?? 0,
+                ...(sizePricesPayload !== undefined ? { sizePrices: sizePricesPayload } : {}),
+            };
+
+            const savedOpt = opt.id
+                ? await updateAddonOption(opt.id, optPayload)
+                : await createAddonOption(optPayload);
+
+            // Register this size option's key → real id mapping
+            if (!buildSizePrices) {
+                const localKey = String(opt.id ?? opt._tempId);
+                sizeOptionKeyToId[localKey] = savedOpt.id;
             }
+
+            savedOptions.push(savedOpt);
         }
 
-        result.push({ ...savedAddon, options: savedOptions });
+        return { ...savedAddon, options: savedOptions };
     }
 
-    return result;
+    const result = [];
+    for (const addon of sizeAddons) {
+        result.push(await saveAddonAndOptions(addon, false));
+    }
+    for (const addon of otherAddons) {
+        result.push(await saveAddonAndOptions(addon, true));
+    }
+
+    // Restore original order
+    return newAddons.map(a =>
+        result.find(r => r.id === a.id) ?? result.find(r => r.label === a.label)
+    ).filter(Boolean);
 }

@@ -40,6 +40,9 @@ public class ItemAddon extends BaseEntity {
 	@Column(name = "max_selections")
 	private Integer maxSelections;
 
+	@Column(name = "sort_order", nullable = false)
+	private int sortOrder = 0;
+
 	@OneToMany(mappedBy = "addon", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("id ASC")
 	private Set<ItemAddonOption> options;
@@ -82,6 +85,14 @@ public class ItemAddon extends BaseEntity {
 
 	public void setMaxSelections(Integer maxSelections) {
 		this.maxSelections = maxSelections;
+	}
+
+	public int getSortOrder() {
+		return sortOrder;
+	}
+
+	public void setSortOrder(int sortOrder) {
+		this.sortOrder = sortOrder;
 	}
 
 	public Set<ItemAddonOption> getOptions() {

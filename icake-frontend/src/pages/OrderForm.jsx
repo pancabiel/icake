@@ -40,7 +40,7 @@ export default function OrderForm() {
 			date: null,
 			time: "08:00",
 			// Each item now carries: productId, quantity, note, addonOptionIds, selections
-			items: [{ productId: "", quantity: 1, note: "", addonOptionIds: [], selections: {} }],
+			items: [{ productId: "", quantity: 1, note: "", addonOptionIds: [], selections: {}, addonExtraPrice: 0 }],
 		},
 	});
 
@@ -120,6 +120,7 @@ export default function OrderForm() {
 		form.setValue(`items.${index}.productId`, productId);
 		form.setValue(`items.${index}.addonOptionIds`, []);
 		form.setValue(`items.${index}.selections`, {});
+		form.setValue(`items.${index}.addonExtraPrice`, 0);
 
 		if (!productId) return;
 		const selectedItem = items.find(i => i.id === productId || String(i.id) === String(productId));
@@ -130,10 +131,11 @@ export default function OrderForm() {
 	}
 
 	// ── When addon modal confirms ──────────────────────────────────────────────
-	function handleAddonConfirm({ selections, addonOptionIds, note }) {
+	function handleAddonConfirm({ selections, addonOptionIds, note, extraPrice }) {
 		const { index } = addonModal;
 		form.setValue(`items.${index}.selections`, selections);
 		form.setValue(`items.${index}.addonOptionIds`, addonOptionIds);
+		form.setValue(`items.${index}.addonExtraPrice`, extraPrice ?? 0);
 		if (note) form.setValue(`items.${index}.note`, note);
 		setAddonModal(null);
 	}
@@ -376,6 +378,7 @@ export default function OrderForm() {
 						<h3 className="font-semibold text-2xl">Itens</h3>
 						{fields.map((fieldItem, index) => {
 							const addonOptionIds = form.watch(`items.${index}.addonOptionIds`) ?? [];
+							const addonExtraPrice = form.watch(`items.${index}.addonExtraPrice`) ?? 0;
 							const productId = form.watch(`items.${index}.productId`);
 							const selectedItem = items.find(i => String(i.id) === String(productId));
 
@@ -414,7 +417,17 @@ export default function OrderForm() {
 										<div className="flex items-center justify-between">
 											<p className="text-xs text-gray-500">
 												{addonOptionIds.length > 0
-													? `${addonOptionIds.length} opção(ões) selecionada(s)`
+													? <>
+														{addonOptionIds.length} opção(ões)
+														{addonExtraPrice !== 0 && (
+															<span className="font-semibold ml-1" style={{ color: "var(--main-red)" }}>
+																{addonExtraPrice > 0
+																	? `+${addonExtraPrice.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
+																	: addonExtraPrice.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+																}
+															</span>
+														)}
+													</>
 													: "Sem opções selecionadas"
 												}
 											</p>
@@ -449,7 +462,7 @@ export default function OrderForm() {
 						})}
 
 						<Button type="button" variant="secondary" className="w-full"
-							onClick={() => append({ productId: "", quantity: 1, note: "", addonOptionIds: [], selections: {} })}>
+							onClick={() => append({ productId: "", quantity: 1, note: "", addonOptionIds: [], selections: {}, addonExtraPrice: 0 })}>
 							Adicionar Item
 						</Button>
 					</div>
